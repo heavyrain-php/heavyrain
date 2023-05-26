@@ -1,0 +1,58 @@
+{
+    "name": "il-m-yamagishi/heavyrain-php",
+    "description": "Loadtest/Stresstest tool made with PHP",
+    "type": "project",
+    "license": "MIT",
+    "keywords": [
+      "loadtest",
+      "stresstest",
+      "testing"
+    ],
+    "homepage": "https://github.com/il-m-yamagishi/heavyrain-php/",
+    "support": {
+      "issues": "https://github.com/il-m-yamagishi/heavyrain-php/issues",
+      "source": "https://github.com/il-m-yamagishi/heavyrain-php/"
+    },
+    "bin": [
+      "bin/heavyrain",
+      "bin/heavyrain-worker"
+    ],
+    "prefer-stable": true,
+    "authors": [
+        {
+            "name": "Masaru Yamagishi",
+            "email": "m-yamagishi@infiniteloop.co.jp"
+        }
+    ],
+    "require": {
+      "php": ">=8.1"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.17",
+        "phpunit/phpunit": "^10.1",
+        "vimeo/psalm": "^5.12"
+    },
+    "config": {
+      "optimize-autoloader": true,
+      "sort-packages": true
+    },
+    "autoload": {
+      "psr-4": {
+        "Heavyrain\\": "src/"
+      }
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "Heavyrain\\": "tests/"
+      }
+    },
+    "scripts": {
+      "psalm": "psalm",
+      "cs": "php-cs-fixer fix .",
+      "lint": [
+        "@psalm",
+        "@cs"
+      ],
+      "test": "phpunit tests"
+    }
+}

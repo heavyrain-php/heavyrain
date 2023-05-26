@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * @license MIT
+ */
+
+declare(strict_types=1);
+
+(static function () {
+    if (file_exists($installedVendor = dirname(__DIR__, 4) . '/vendor/autoload.php')) {
+        require_once $installedVendor;
+    } else if (file_exists($testVendor = dirname(__DIR__) . '/vendor/autoload.php')) {
+        require_once $testVendor;
+    }
+
+    echo "Hello world\n";
+
+    exit(0);
+})();
