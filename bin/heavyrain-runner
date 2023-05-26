@@ -14,7 +14,7 @@ declare(strict_types=1);
         require_once $testVendor;
     }
 
-    echo "Hello world\n";
+    $exitCode = (new Heavyrain\RunnerApplication())->run();
 
-    exit(0);
+    exit($exitCode);
 })();

@@ -25,7 +25,8 @@
         }
     ],
     "require": {
-      "php": ">=8.1"
+        "php": ">=8.1",
+        "symfony/console": "^6.2"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.17",
@@ -53,6 +54,10 @@
         "@psalm",
         "@cs"
       ],
-      "test": "phpunit tests"
+      "test": "phpunit tests",
+      "ci": [
+        "@lint",
+        "@test"
+      ]
     }
 }
