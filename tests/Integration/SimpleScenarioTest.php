@@ -8,39 +8,33 @@ declare(strict_types=1);
 
 namespace Heavyrain\Integration;
 
-use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use Heavyrain\Scenario\Instructions\AssertHttpResponseInstruction;
 use Heavyrain\Scenario\Instructions\HttpRequestInstruction;
 use Heavyrain\Scenario\Instructions\WaitInstruction;
-use Heavyrain\Scenario\Instructors\DummyInstructor;
+use Heavyrain\Scenario\Instructors\GuzzleInstructorFactory;
+use Heavyrain\Scenario\Instructors\PsrInstructor;
 use Heavyrain\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
 
-#[CoversClass(DummyExecutor::class)]
+#[CoversClass(HttpRequestInstruction::class)]
+#[CoversClass(WaitInstruction::class)]
+#[CoversClass(GuzzleInstructorFactory::class)]
+#[CoversClass(PsrInstructor::class)]
 final class SimpleScenarioTest extends TestCase
 {
     #[Test]
     public function run_simple_scenario(): void
     {
-        $requestFactory = new class () implements RequestFactoryInterface {
-            public function createRequest(string $method, $uri): RequestInterface
-            {
-                return new Request($method, $uri);
-            }
-        };
-        $responseFactory = new class () implements ResponseFactoryInterface {
-            public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
-            {
-                return new Response($code, [], null, '1.1', $reasonPhrase);
-            }
-        };
-        $inst = new DummyInstructor($requestFactory, $responseFactory);
+        $mock = new MockHandler([
+            new Response(),
+        ]);
+        $handler = HandlerStack::create($mock);
+        $client = new Client(compact('handler'));
+        $inst = GuzzleInstructorFactory::create($client);
 
         $func = require __DIR__ . '/../Stubs/simple_scenario.php';
         $func($inst);
