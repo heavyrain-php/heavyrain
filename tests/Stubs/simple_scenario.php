@@ -6,16 +6,14 @@
 
 declare(strict_types=1);
 
-use Heavyrain\Scenario\ExecutorInterface;
+use Heavyrain\Scenario\InstructorInterface;
 
 /**
  * Simple scenario function
  */
-return static function (ExecutorInterface $executor): void {
-    $response = $executor->get('/');
-    $executor->assertResponse($response, static function () {
-        // Do nothing
-    });
+return static function (InstructorInterface $inst): void {
+    $response = $inst->get('/');
+    $response->assertOk();
 
-    $executor->waitSec(1.0);
+    $inst->waitSec(1);
 };
