@@ -12,6 +12,10 @@ use Heavyrain\Scenario\ExecutorInterface;
  * Simple scenario function
  */
 return static function (ExecutorInterface $executor): void {
-    $executor->get('/');
+    $response = $executor->get('/');
+    $executor->assertResponse($response, static function () {
+        // Do nothing
+    });
+
     $executor->waitSec(1.0);
 };

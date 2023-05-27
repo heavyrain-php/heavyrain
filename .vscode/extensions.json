@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "EditorConfig.EditorConfig",
+    "junstyle.php-cs-fixer",
+    "neilbrayfield.php-docblocker",
+    "getpsalm.psalm-vscode-plugin"
+  ]
+}

@@ -8,13 +8,15 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario\Executors;
 
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
+use Closure;
 use Heavyrain\Scenario\ExecutorInterface;
 use Heavyrain\Scenario\InstructionInterface;
+use Heavyrain\Scenario\Instructions\AssertHttpResponseInstruction;
 use Heavyrain\Scenario\Instructions\HttpRequestInstruction;
 use Heavyrain\Scenario\Instructions\WaitInstruction;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -25,11 +27,10 @@ class DummyExecutor implements ExecutorInterface
     /** @var InstructionInterface[] $instructions */
     private array $instructions = [];
 
-    public function __construct()
-    {
-        if (!class_exists(Response::class)) {
-            throw new \RuntimeException('You should require guzzlehttp/psr7 to use ' . __CLASS__);
-        }
+    public function __construct(
+        private readonly RequestFactoryInterface $requestFactory,
+        private readonly ResponseFactoryInterface $responseFactory,
+    ) {
     }
 
     /**
@@ -44,13 +45,18 @@ class DummyExecutor implements ExecutorInterface
 
     public function get(string $path): ResponseInterface
     {
-        return $this->request(new Request('GET', $path));
+        return $this->request($this->requestFactory->createRequest('GET', $path));
     }
 
     public function request(RequestInterface $request): ResponseInterface
     {
         $this->instructions[] = new HttpRequestInstruction($request);
-        return new Response();
+        return $this->responseFactory->createResponse();
+    }
+
+    public function assertResponse(ResponseInterface $response, Closure $assertionFunc): void
+    {
+        $this->instructions[] = new AssertHttpResponseInstruction($response, $assertionFunc);
     }
 
     public function waitSec(int|float $sec): void

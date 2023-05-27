@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario;
 
+use Closure;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -17,7 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 interface ExecutorInterface
 {
     /**
-     * Make GET request
+     * Makes GET request
      *
      * @param string $path HTTP Path
      * @return ResponseInterface Result
@@ -25,7 +26,7 @@ interface ExecutorInterface
     public function get(string $path): ResponseInterface;
 
     /**
-     * Make HTTP request
+     * Makes HTTP request
      *
      * @param RequestInterface $request Request instance
      * @return ResponseInterface Result
@@ -33,7 +34,16 @@ interface ExecutorInterface
     public function request(RequestInterface $request): ResponseInterface;
 
     /**
-     * Wait target second
+     * Asserts HTTP response
+     *
+     * @param ResponseInterface $response
+     * @param Closure $assertionFunc
+     * @return void
+     */
+    public function assertResponse(ResponseInterface $response, Closure $assertionFunc): void;
+
+    /**
+     * Waits target second
      *
      * @param integer|float $sec wait seconds
      * @return void
