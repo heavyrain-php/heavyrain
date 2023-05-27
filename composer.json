@@ -4,18 +4,18 @@
     "type": "project",
     "license": "MIT",
     "keywords": [
-      "loadtest",
-      "stresstest",
-      "testing"
+        "loadtest",
+        "stresstest",
+        "testing"
     ],
     "homepage": "https://github.com/il-m-yamagishi/heavyrain-php/",
     "support": {
-      "issues": "https://github.com/il-m-yamagishi/heavyrain-php/issues",
-      "source": "https://github.com/il-m-yamagishi/heavyrain-php/"
+        "issues": "https://github.com/il-m-yamagishi/heavyrain-php/issues",
+        "source": "https://github.com/il-m-yamagishi/heavyrain-php/"
     },
     "bin": [
-      "bin/heavyrain",
-      "bin/heavyrain-worker"
+        "bin/heavyrain",
+        "bin/heavyrain-runner"
     ],
     "prefer-stable": true,
     "authors": [
@@ -26,38 +26,46 @@
     ],
     "require": {
         "php": ">=8.1",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^2.0",
         "symfony/console": "^6.2"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.17",
+        "guzzlehttp/guzzle": "^7.7",
+        "guzzlehttp/psr7": "^2.5",
         "phpunit/phpunit": "^10.1",
         "vimeo/psalm": "^5.12"
     },
+    "suggest": {
+        "guzzlehttp/guzzle": "For GuzzleHttpClient"
+    },
     "config": {
-      "optimize-autoloader": true,
-      "sort-packages": true
+        "optimize-autoloader": true,
+        "sort-packages": true
     },
     "autoload": {
-      "psr-4": {
-        "Heavyrain\\": "src/"
-      }
+        "psr-4": {
+            "Heavyrain\\": "src/"
+        }
     },
     "autoload-dev": {
-      "psr-4": {
-        "Heavyrain\\": "tests/"
-      }
+        "psr-4": {
+            "Heavyrain\\": "tests/"
+        }
     },
     "scripts": {
-      "psalm": "psalm",
-      "cs": "php-cs-fixer fix .",
-      "lint": [
-        "@psalm",
-        "@cs"
-      ],
-      "test": "phpunit tests",
-      "ci": [
-        "@lint",
-        "@test"
-      ]
+        "psalm": "psalm",
+        "cs": "php-cs-fixer fix .",
+        "lint": [
+            "@psalm",
+            "@cs"
+        ],
+        "test": "phpunit tests",
+        "ci": [
+            "@lint",
+            "@test"
+        ]
     }
 }
