@@ -9,10 +9,13 @@ declare(strict_types=1);
 namespace Heavyrain\Console\Commands;
 
 use Closure;
-use GuzzleHttp\Client;
-use GuzzleHttp\TransferStats;
-use Heavyrain\Scenario\Instructors\GuzzleInstructorFactory;
+use Heavyrain\Executor\Executor;
+use Heavyrain\Executor\HttpRequestProfilerMiddleware;
+use Heavyrain\Executor\HttpResult;
+use Heavyrain\Scenario\Instructors\PsrInstructor;
+use Heavyrain\Support\DefaultHttpBuilder;
 use ReflectionFunction;
+use SplStack;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -97,31 +100,46 @@ final class RunCommand extends Command
             return Command::INVALID;
         }
         $ref = new ReflectionFunction($func);
-        if (!$ref->isStatic()) {
+        if (\method_exists($ref, 'isStatic') && !$ref->isStatic()) {
             $io->warning('Closure should be static: `return static function(...`');
         }
 
-        $client = new Client([
+        $builder = new DefaultHttpBuilder();
+        $client = $builder->buildClient(null, [
             'allow_redirects' => false,
-            'base_uri' => $baseUri,
-            'connect_timeout' => $connectTimeout,
-            'on_stats' => static function (TransferStats $stats) use ($io): void {
-                $table = $io->createTable();
-                $rows = [];
-                /** @var scalar|scalar[] $value */
-                foreach ($stats->getHandlerStats() as $key => $value) {
-                    $rows[] = [$key, is_array($value) ? implode(', ', $value) : $value];
-                }
-                $table->addRows($rows);
-                $table->render();
-            },
-            'read_timeout' => $readTimeout,
             'verify' => !$noVerify,
             'timeout' => $timeout,
+            'expose_curl_info' => true,
         ]);
-        $inst = GuzzleInstructorFactory::create($client);
+        /** @var SplStack<HttpResult> $profiles */
+        $profiles = new SplStack();
+        $client->addMiddleware(new HttpRequestProfilerMiddleware($profiles));
+        $inst = new PsrInstructor(
+            $builder->getRequestFactory(),
+            $builder->getStreamFactory(),
+            $client,
+            $baseUri,
+        );
 
-        $ref->invoke($inst);
+        $executor = new Executor($ref, $inst);
+        $executor->execute();
+
+        $table = $io->createTable();
+        $rows = [];
+        foreach ($profiles as $profile) {
+            $rows[] = [
+                $profile->summary,
+                \sprintf('%s %s', $profile->request['method'], $profile->request['path']),
+                is_null($profile->curlInfo) ? 0 : \round(intval($profile->curlInfo['total_time_us']) / 10) / 100,
+            ];
+        }
+        $table
+            ->setHeaders([
+                'Summary',
+                'Path',
+                'Total(ms)',
+            ])->addRows($rows)
+            ->render();
 
         return Command::SUCCESS;
     }

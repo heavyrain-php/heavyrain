@@ -31,6 +31,7 @@ class PsrInstructor implements InstructorInterface
         private readonly RequestFactoryInterface $requestFactory,
         private readonly StreamFactoryInterface $streamFactory,
         private readonly ClientInterface $client,
+        private readonly string $baseUri,
     ) {
     }
 
@@ -139,7 +140,8 @@ class PsrInstructor implements InstructorInterface
         array $headers = [],
     ): RequestInterface {
         $stream = $body instanceof StreamInterface ? $body : $this->streamFactory->createStream($body ?? '');
-        $request = $this->requestFactory->createRequest(\strtoupper($method), $path)
+        $request = $this->requestFactory
+            ->createRequest(\strtoupper($method), \sprintf('%s/%s', $this->baseUri, \ltrim($path, '/')))
             ->withBody($stream)
             ->withProtocolVersion($version);
 

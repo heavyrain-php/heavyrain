@@ -8,33 +8,43 @@ declare(strict_types=1);
 
 namespace Heavyrain\Integration;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Response;
+use Buzz\Client\BuzzClientInterface;
 use Heavyrain\Scenario\Instructions\HttpRequestInstruction;
 use Heavyrain\Scenario\Instructions\WaitInstruction;
-use Heavyrain\Scenario\Instructors\GuzzleInstructorFactory;
+use Heavyrain\Scenario\Instructors\BuzzInstructorFactory;
 use Heavyrain\Scenario\Instructors\PsrInstructor;
+use Heavyrain\Support\DefaultHttpBuilder;
 use Heavyrain\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Psr\Http\Message\ResponseInterface;
 
 #[CoversClass(HttpRequestInstruction::class)]
 #[CoversClass(WaitInstruction::class)]
-#[CoversClass(GuzzleInstructorFactory::class)]
+#[CoversClass(BuzzInstructorFactory::class)]
 #[CoversClass(PsrInstructor::class)]
 final class SimpleScenarioTest extends TestCase
 {
     #[Test]
     public function run_simple_scenario(): void
     {
-        $mock = new MockHandler([
-            new Response(),
-        ]);
-        $handler = HandlerStack::create($mock);
-        $client = new Client(compact('handler'));
-        $inst = GuzzleInstructorFactory::create($client);
+        /** @var \PHPUnit\Framework\MockObject\MockObject&ResponseInterface $responseMock */
+        $responseMock = $this->createMock(ResponseInterface::class);
+        $responseMock->expects($this->any())
+            ->method('getStatusCode')
+            ->willReturn(200);
+        /** @var \PHPUnit\Framework\MockObject\MockObject&BuzzClientInterface $clientMock */
+        $clientMock = $this->createMock(BuzzClientInterface::class);
+        $clientMock->expects($this->once())
+            ->method('sendRequest')
+            ->willReturn($responseMock);
+        $builder = new DefaultHttpBuilder();
+        $inst = new PsrInstructor(
+            $builder->getRequestFactory(),
+            $builder->getStreamFactory(),
+            $builder->buildClient($clientMock),
+            '',
+        );
 
         $func = require __DIR__ . '/../Stubs/simple_scenario.php';
         $func($inst);

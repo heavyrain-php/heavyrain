@@ -37,6 +37,7 @@ class Response
         }
         $this->assertIsJson();
         $bodyStr = (string)$this->rawResponse->getBody();
+        assert($depth > 0 && $depth < 2147483648);
         $decodedJson = \json_decode($bodyStr, true, $depth, $flags);
         $this->assertTrue(
             \json_last_error() === \JSON_ERROR_NONE,
@@ -84,7 +85,7 @@ class Response
     public function assertHeaderHas(string $expectedName, string|array $expectedValue): self
     {
         $expectedValueList = \is_array($expectedValue) ? $expectedValue : [$expectedValue];
-        $message = \sprintf('Header %s is %s', $expectedName, \implode(' or ', $expectedValueList));
+        $message = \sprintf('Header %s should be %s', $expectedName, \implode(' or ', $expectedValueList));
         $header = $this->rawResponse->getHeaderLine($expectedName);
 
         $exists = false;
@@ -101,9 +102,17 @@ class Response
 
     public function assertStatusCode(int $expected): self
     {
-        return $this->assertTrue(
+        return $this->assertValid()->assertTrue(
             $expected === $this->rawResponse->getStatusCode(),
-            \sprintf('Status code is %d', $expected),
+            \sprintf('Status code should be %d, actual %d', $expected, $this->rawResponse->getStatusCode()),
+        );
+    }
+
+    public function assertValid(): self
+    {
+        return $this->assertTrue(
+            !\is_null($this->rawResponse->getStatusCode()) && $this->rawResponse->getStatusCode() !== 0,
+            'Response should be valid',
         );
     }
 
