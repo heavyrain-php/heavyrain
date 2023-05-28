@@ -50,18 +50,6 @@ final class RunCommand extends Command
                 'Request timeout seconds',
                 0.0,
             )->addOption(
-                'connect-timeout',
-                'c',
-                InputOption::VALUE_OPTIONAL,
-                'Request connection timeout seconds',
-                0,
-            )->addOption(
-                'read-timeout',
-                'r',
-                InputOption::VALUE_OPTIONAL,
-                'Response read timeout',
-                null,
-            )->addOption(
                 'no-verify',
                 's',
                 InputOption::VALUE_OPTIONAL,
@@ -78,8 +66,6 @@ final class RunCommand extends Command
         /** @var string $baseUri */
         $baseUri = $input->getOption('base-uri');
         $timeout = floatval($input->getOption('timeout'));
-        $connectTimeout = floatval($input->getOption('connect-timeout'));
-        $readTimeout = floatval($input->getOption('read-timeout') ?? ini_get('default_socket_timeout'));
         $noVerify = boolval($input->getOption('no-verify'));
 
         /** @var string $scenarioFileName */
