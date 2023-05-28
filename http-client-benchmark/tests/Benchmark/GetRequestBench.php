@@ -220,8 +220,8 @@ class GetRequestBench
         $this->psrRequest = $this->createPsrRequest($requestName, $uri);
         $loop = \React\EventLoop\Loop::get();
         $this->reactClient = new \React\Http\Io\Transaction(
-           \React\Http\Io\Sender::createFromLoop($loop),
-           $loop,
+            \React\Http\Io\Sender::createFromLoop($loop),
+            $loop,
         );
     }
 
