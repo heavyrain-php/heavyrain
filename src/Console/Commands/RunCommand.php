@@ -10,12 +10,8 @@ namespace Heavyrain\Console\Commands;
 
 use Closure;
 use Heavyrain\Executor\Executor;
-use Heavyrain\Executor\HttpRequestProfilerMiddleware;
-use Heavyrain\Executor\HttpResult;
-use Heavyrain\Scenario\Instructors\PsrInstructor;
-use Heavyrain\Support\DefaultHttpBuilder;
+use Heavyrain\Executor\ExecutorConfig;
 use ReflectionFunction;
-use SplStack;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -37,24 +33,21 @@ final class RunCommand extends Command
                 'scenario-php-file',
                 InputArgument::REQUIRED,
                 'PHP filename for scenario',
-            )->addOption(
+            )->addArgument(
                 'base-uri',
-                'b',
-                InputOption::VALUE_OPTIONAL,
+                InputArgument::REQUIRED,
                 'Request base URI',
-                'http://localhost',
             )->addOption(
                 'timeout',
-                't',
-                InputOption::VALUE_OPTIONAL,
+                null,
+                InputOption::VALUE_REQUIRED,
                 'Request timeout seconds',
                 0.0,
             )->addOption(
                 'no-verify',
-                's',
-                InputOption::VALUE_OPTIONAL,
+                null,
+                InputOption::VALUE_NONE,
                 'Disables SSL certificate verification',
-                false,
             );
     }
 
@@ -64,7 +57,7 @@ final class RunCommand extends Command
         assert($cwd !== false);
 
         /** @var string $baseUri */
-        $baseUri = $input->getOption('base-uri');
+        $baseUri = $input->getArgument('base-uri');
         $timeout = floatval($input->getOption('timeout'));
         $noVerify = boolval($input->getOption('no-verify'));
 
@@ -85,29 +78,17 @@ final class RunCommand extends Command
             $io->error('scenario-php-file must return Closure');
             return Command::INVALID;
         }
-        $ref = new ReflectionFunction($func);
-        if (\method_exists($ref, 'isStatic') && !$ref->isStatic()) {
+        $scenarioFunction = new ReflectionFunction($func);
+        if (\method_exists($scenarioFunction, 'isStatic') && !$scenarioFunction->isStatic()) {
             $io->warning('Closure should be static: `return static function(...`');
         }
 
-        $builder = new DefaultHttpBuilder();
-        $client = $builder->buildClient(null, [
-            'allow_redirects' => false,
-            'verify' => !$noVerify,
-            'timeout' => $timeout,
-            'expose_curl_info' => true,
-        ]);
-        /** @var SplStack<HttpResult> $profiles */
-        $profiles = new SplStack();
-        $client->addMiddleware(new HttpRequestProfilerMiddleware($profiles));
-        $inst = new PsrInstructor(
-            $builder->getRequestFactory(),
-            $builder->getStreamFactory(),
-            $client,
+        $config = new ExecutorConfig(
             $baseUri,
+            !$noVerify,
+            $timeout,
         );
-
-        $executor = new Executor($ref, $inst);
+        $executor = new Executor($config, $scenarioFunction);
 
         // TODO: concurrency
         $executor->execute();
@@ -115,7 +96,7 @@ final class RunCommand extends Command
         // TODO: to Reporter class
         $table = $io->createTable();
         $rows = [];
-        foreach ($profiles as $profile) {
+        foreach ($executor->getProfiles() as $profile) {
             $rows[] = [
                 $profile->summary,
                 \sprintf('%s %s', $profile->request['method'], $profile->request['path']),

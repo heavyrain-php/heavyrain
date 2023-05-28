@@ -46,6 +46,8 @@ class HttpRequestProfilerMiddleware implements MiddlewareInterface
                 $e,
                 null,
             ));
+        } finally {
+            return $next($request);
         }
     }
 

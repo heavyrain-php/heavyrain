@@ -55,7 +55,7 @@
         }
     },
     "scripts": {
-        "console": "@php -S localhost:8080 -t public",
+        "sample": "@php -S localhost:8081 -t sample-app/public",
         "psalm": "psalm",
         "cs": "php-cs-fixer fix .",
         "lint": [
