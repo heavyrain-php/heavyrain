@@ -169,6 +169,10 @@ class PsrInstructor implements InstructorInterface
     {
         $this->instructions[] = new WaitInstruction($sec);
 
-        // TODO: execute sleep
+        // TODO: to async
+
+        /** @var int<0, max> $microsec */
+        $microsec = \intval(\abs(\round($sec * 1000.0 * 1000.0, 0)));
+        usleep($microsec);
     }
 }

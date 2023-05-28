@@ -11,7 +11,7 @@ namespace Heavyrain\Integration;
 use Buzz\Client\BuzzClientInterface;
 use Heavyrain\Scenario\Instructions\HttpRequestInstruction;
 use Heavyrain\Scenario\Instructions\WaitInstruction;
-use Heavyrain\Scenario\Instructors\BuzzInstructorFactory;
+use Heavyrain\Scenario\InstructorInterface;
 use Heavyrain\Scenario\Instructors\PsrInstructor;
 use Heavyrain\Support\DefaultHttpBuilder;
 use Heavyrain\TestCase;
@@ -21,8 +21,8 @@ use Psr\Http\Message\ResponseInterface;
 
 #[CoversClass(HttpRequestInstruction::class)]
 #[CoversClass(WaitInstruction::class)]
-#[CoversClass(BuzzInstructorFactory::class)]
 #[CoversClass(PsrInstructor::class)]
+#[CoversClass(DefaultHttpBuilder::class)]
 final class SimpleScenarioTest extends TestCase
 {
     #[Test]
@@ -30,9 +30,6 @@ final class SimpleScenarioTest extends TestCase
     {
         /** @var \PHPUnit\Framework\MockObject\MockObject&ResponseInterface $responseMock */
         $responseMock = $this->createMock(ResponseInterface::class);
-        $responseMock->expects($this->any())
-            ->method('getStatusCode')
-            ->willReturn(200);
         /** @var \PHPUnit\Framework\MockObject\MockObject&BuzzClientInterface $clientMock */
         $clientMock = $this->createMock(BuzzClientInterface::class);
         $clientMock->expects($this->once())
@@ -46,7 +43,11 @@ final class SimpleScenarioTest extends TestCase
             '',
         );
 
-        $func = require __DIR__ . '/../Stubs/simple_scenario.php';
+        $func = static function (InstructorInterface $inst): void {
+            $inst->get('/');
+            $inst->waitSec(0.0001);
+        };
+
         $func($inst);
 
         $instructions = $inst->getInstructions();
@@ -55,13 +56,13 @@ final class SimpleScenarioTest extends TestCase
 
         $getRootHttpInstruction = $instructions[0];
         $this->assertInstanceOf(HttpRequestInstruction::class, $getRootHttpInstruction);
-        assert($getRootHttpInstruction instanceof HttpRequestInstruction);
+        \assert($getRootHttpInstruction instanceof HttpRequestInstruction);
         $this->assertSame('GET', $getRootHttpInstruction->request->getMethod());
         $this->assertSame('/', $getRootHttpInstruction->request->getUri()->getPath());
 
         $waitOneSecInstruction = $instructions[1];
         $this->assertInstanceOf(WaitInstruction::class, $waitOneSecInstruction);
-        assert($waitOneSecInstruction instanceof WaitInstruction);
-        $this->assertSame(1, $waitOneSecInstruction->sec);
+        \assert($waitOneSecInstruction instanceof WaitInstruction);
+        $this->assertSame(0.0001, $waitOneSecInstruction->sec);
     }
 }

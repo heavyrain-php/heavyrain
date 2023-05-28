@@ -122,8 +122,11 @@ final class RunCommand extends Command
         );
 
         $executor = new Executor($ref, $inst);
+
+        // TODO: concurrency
         $executor->execute();
 
+        // TODO: to Reporter class
         $table = $io->createTable();
         $rows = [];
         foreach ($profiles as $profile) {
