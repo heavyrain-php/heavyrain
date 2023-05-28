@@ -44,9 +44,8 @@ with PHP version 8.2.6, xdebug ❌, opcache ✔
 Subjects: 6, Assertions: 0, Failures: 0, Errors: 0
 ```
 
-+-----------------+--------------+-------------------------------------+------+-----+----------+----------+--------+
 | benchmark       | subject      | set                                 | revs | its | mem_peak | mode     | rstdev |
-+-----------------+--------------+-------------------------------------+------+-----+----------+----------+--------+
+|-----------------|--------------|-------------------------------------|------|-----|----------|----------|--------|
 | GetRequestBench | benchGuzzle  | curl,guzzle                         | 1    | 100 | 1.708mb  | 3.073ms  | ±5.12% |
 | GetRequestBench | benchGuzzle  | curl_multi,guzzle                   | 1    | 100 | 1.708mb  | 3.871ms  | ±5.51% |
 | GetRequestBench | benchGuzzle  | stream,guzzle                       | 1    | 100 | 1.708mb  | 2.944ms  | ±5.76% |
@@ -90,4 +89,3 @@ Subjects: 6, Assertions: 0, Failures: 0, Errors: 0
 | GetRequestBench | benchLaminas |                                     | 1    | 100 | 1.707mb  | 4.989ms  | ±5.09% |
 | GetRequestBench | benchSymfony | native                              | 1    | 100 | 1.707mb  | 2.636ms  | ±4.83% |
 | GetRequestBench | benchSymfony | curl                                | 1    | 100 | 1.707mb  | 2.986ms  | ±4.56% |
-+-----------------+--------------+-------------------------------------+------+-----+----------+----------+--------+
