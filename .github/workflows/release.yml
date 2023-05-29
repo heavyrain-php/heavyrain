@@ -25,7 +25,7 @@ jobs:
         run: test -f ./phive.phar || curl -fLO https://phar.io/releases/phive.phar
 
       - name: Install phars
-        run: php phive.phar install --trust-gpg-keys
+        run: php phive.phar install --force-accept-unsigned
 
       - name: Build phar archive
         run: composer build
