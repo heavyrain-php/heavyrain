@@ -10,8 +10,12 @@ namespace Heavyrain\Tests\Integration;
 
 use Buzz\Client\BuzzClientInterface;
 use Heavyrain\Scenario\HttpProfiler;
+use Heavyrain\Scenario\HttpResult;
+use Heavyrain\Scenario\Instructions\HttpRequestInstruction;
+use Heavyrain\Scenario\Instructions\WaitInstruction;
 use Heavyrain\Scenario\InstructorInterface;
 use Heavyrain\Scenario\Instructors\PsrInstructor;
+use Heavyrain\Scenario\Response;
 use Heavyrain\Support\DefaultHttpBuilder;
 use Heavyrain\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -21,6 +25,10 @@ use Psr\Http\Message\ResponseInterface;
 #[CoversClass(HttpProfiler::class)]
 #[CoversClass(PsrInstructor::class)]
 #[CoversClass(DefaultHttpBuilder::class)]
+#[CoversClass(HttpResult::class)]
+#[CoversClass(HttpRequestInstruction::class)]
+#[CoversClass(WaitInstruction::class)]
+#[CoversClass(Response::class)]
 final class SimpleScenarioTest extends TestCase
 {
     #[Test]

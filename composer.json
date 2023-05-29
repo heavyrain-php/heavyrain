@@ -62,11 +62,12 @@
         "build": "./tools/box compile",
         "psalm": "./tools/psalm",
         "cs": "./tools/php-cs-fixer fix .",
+        "test": "@php vendor/bin/phpunit",
+        "coverage": "XDEBUG_MODE=coverage php vendor/bin/phpunit -d xdebug.mode=coverage --coverage-clover=clover.xml",
         "lint": [
             "@psalm",
             "@cs"
         ],
-        "test": "@php vendor/bin/phpunit",
         "ci": [
             "@lint",
             "@test"

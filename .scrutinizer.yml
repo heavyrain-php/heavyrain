@@ -20,7 +20,7 @@ build:
       - ./tools/phive --no-progress --home ./.phive install --trust-gpg-keys E82B2FB314E9906E,12CE0F1D262429A5,2DF45277AEF09A2F --force-accept-unsigned
   tests:
     override:
-      - command: ./composer.phar test -- -dxdebug.mode=coverage --coverage-clover=clover.xml
+      - command: ./composer.phar coverage
         coverage:
           file: clover.xml
           format: php-clover
