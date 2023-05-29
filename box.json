@@ -1,0 +1,15 @@
+{
+  "blacklist": [
+    ".github",
+    ".vscode",
+    "http-client-benchmark",
+    "sample-app",
+    "tests",
+    ".editorconfig",
+    ".gitignore",
+    "*.cache",
+    "*.phar",
+    "Dockerfile",
+    "*.xml"
+  ]
+}

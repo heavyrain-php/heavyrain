@@ -56,6 +56,7 @@
     },
     "scripts": {
         "sample": "@php -S localhost:8081 -t sample-app/public",
+        "build": "@php box.phar compile",
         "psalm": "psalm",
         "cs": "php-cs-fixer fix .",
         "lint": [
