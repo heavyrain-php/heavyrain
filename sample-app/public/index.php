@@ -17,7 +17,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 function withJson(ResponseInterface $response, array $body): ResponseInterface
 {
     $bodyStr = \json_encode($body);
-    $stream = new Stream('php://temp');
+    $stream = new Stream(\fopen('php://memory', 'rw+'));
     $stream->write($bodyStr);
     return $response
         ->withBody($stream)
@@ -28,7 +28,7 @@ function withJson(ResponseInterface $response, array $body): ResponseInterface
 $acceptsJson = static function (ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
     $response = $handler->handle($request);
     $accept = $request->getHeaderLine('Accept');
-    if (!\str_starts_with($accept, 'application/json')) {
+    if ($accept !== '*/*' && !\str_starts_with($accept, 'application/json')) {
         return withJson($response, ['error' => \sprintf('Invalid Accept header provided: %s', $accept)])
             ->withStatus(400);
     }

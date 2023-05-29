@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario;
 
+use Psr\Http\Message\RequestInterface;
+
 /**
  * Scenario Instructor
  */
@@ -22,6 +24,20 @@ interface InstructorInterface
      * @return Response
      */
     public function get(
+        string $path,
+        string $version = '1.1',
+        array $headers = [],
+    ): Response;
+
+    /**
+     * Makes GET JSON HTTP request
+     *
+     * @param string $path
+     * @param non-empty-string $version Protocol version
+     * @param array<non-empty-string, string|string[]> $headers
+     * @return Response
+     */
+    public function getJson(
         string $path,
         string $version = '1.1',
         array $headers = [],
@@ -47,14 +63,14 @@ interface InstructorInterface
      * Makes POST JSON HTTP request
      *
      * @param string $path
-     * @param array $body
+     * @param array|null $body
      * @param non-empty-string $version Protocol version
      * @param array<non-empty-string, string|string[]> $headers
      * @return Response
      */
     public function postJson(
         string $path,
-        array $body,
+        array|null $body = null,
         string $version = '1.1',
         array $headers = [],
     ): Response;
@@ -63,14 +79,26 @@ interface InstructorInterface
      * Makes HEAD HTTP request
      *
      * @param string $path
-     * @param string|null $body
      * @param non-empty-string $version Protocol version
      * @param array<non-empty-string, string|string[]> $headers
      * @return Response
      */
     public function head(
         string $path,
-        string|null $body = null,
+        string $version = '1.1',
+        array $headers = [],
+    ): Response;
+
+    /**
+     * Makes HEAD JSON HTTP request
+     *
+     * @param string $path
+     * @param non-empty-string $version Protocol version
+     * @param array<non-empty-string, string|string[]> $headers
+     * @return Response
+     */
+    public function headJson(
+        string $path,
         string $version = '1.1',
         array $headers = [],
     ): Response;
@@ -92,7 +120,23 @@ interface InstructorInterface
     ): Response;
 
     /**
-     * Makes DELETE request
+     * Makes PUT JSON HTTP request
+     *
+     * @param string $path
+     * @param array|null $body
+     * @param non-empty-string $version Protocol version
+     * @param array<non-empty-string, string|string[]> $headers
+     * @return Response
+     */
+    public function putJson(
+        string $path,
+        array|null $body = null,
+        string $version = '1.1',
+        array $headers = [],
+    ): Response;
+
+    /**
+     * Makes DELETE HTTP request
      *
      * @param string $path
      * @param non-empty-string $version Protocol version
@@ -101,20 +145,23 @@ interface InstructorInterface
      */
     public function delete(
         string $path,
+        string|null $body = null,
         string $version = '1.1',
         array $headers = [],
     ): Response;
 
     /**
-     * Makes OPTIONS HTTP request
+     * Makes DELETE JSON HTTP request
      *
      * @param string $path
+     * @param array|null $body
      * @param non-empty-string $version Protocol version
      * @param array<non-empty-string, string|string[]> $headers
      * @return Response
      */
-    public function options(
+    public function deleteJson(
         string $path,
+        array|null $body = null,
         string $version = '1.1',
         array $headers = [],
     ): Response;
@@ -134,6 +181,30 @@ interface InstructorInterface
         string $version = '1.1',
         array $headers = [],
     ): Response;
+
+    /**
+     * Makes PATCH JSON HTTP request
+     *
+     * @param string $path
+     * @param array|null $body
+     * @param non-empty-string $version Protocol version
+     * @param array<non-empty-string, string|string[]> $headers
+     * @return Response
+     */
+    public function patchJson(
+        string $path,
+        array|null $body = null,
+        string $version = '1.1',
+        array $headers = [],
+    ): Response;
+
+    /**
+     * Makes HTTP request
+     *
+     * @param RequestInterface $request
+     * @return Response
+     */
+    public function request(RequestInterface $request): Response;
 
     /**
      * Waits target second

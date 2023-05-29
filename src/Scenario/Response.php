@@ -20,6 +20,7 @@ class Response
 
     public function __construct(
         private readonly ResponseInterface $rawResponse,
+        private readonly HttpResult $result,
     ) {
     }
 
@@ -117,8 +118,13 @@ class Response
     public function assertHeaderHas(string $expectedName, string|array $expectedValue): self
     {
         $expectedValueList = \is_array($expectedValue) ? $expectedValue : [$expectedValue];
-        $message = \sprintf('Header %s should be %s', $expectedName, \implode(' or ', $expectedValueList));
         $header = $this->rawResponse->getHeaderLine($expectedName);
+        $message = \sprintf(
+            'Header %s should be %s, actual %s',
+            $expectedName,
+            \implode(' or ', $expectedValueList),
+            $header,
+        );
 
         $exists = false;
         foreach ($expectedValueList as $v) {
@@ -163,6 +169,7 @@ class Response
      */
     protected function assertTrue(bool $expected, string $message): self
     {
+        $this->result->completeAssertion($expected);
         if (!$expected) {
             throw new ResponseAssertionException($this->rawResponse, $message);
         }

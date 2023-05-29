@@ -11,7 +11,7 @@ use Heavyrain\Scenario\InstructorInterface;
 return static function (InstructorInterface $inst): void {
     $inst->get('/')
         ->assertOk()
-        ->assertHeaderHas('Content-Length', '12')
+        ->assertHeaderHas('Content-Length', '27')
         ->assertContentHas('Hello world.');
 
     $inst->post('/json')

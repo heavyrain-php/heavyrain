@@ -9,8 +9,12 @@ declare(strict_types=1);
 namespace Heavyrain\Console\Commands;
 
 use Closure;
-use Heavyrain\Executor\Executor;
 use Heavyrain\Executor\ExecutorConfig;
+use Heavyrain\Executor\SyncExecutor;
+use Heavyrain\Reporters\TableReporter;
+use Heavyrain\Scenario\HttpProfiler;
+use Heavyrain\Scenario\RequestException;
+use Heavyrain\Scenario\ResponseAssertionException;
 use ReflectionFunction;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -88,28 +92,13 @@ final class RunCommand extends Command
             !$noVerify,
             $timeout,
         );
-        $executor = new Executor($config, $scenarioFunction);
+        $profiler = new HttpProfiler();
+        $executor = new SyncExecutor($config, $scenarioFunction, $profiler);
 
         // TODO: concurrency
         $executor->execute();
 
-        // TODO: to Reporter class
-        $table = $io->createTable();
-        $rows = [];
-        foreach ($executor->getProfiles() as $profile) {
-            $rows[] = [
-                $profile->summary,
-                \sprintf('%s %s', $profile->request['method'], $profile->request['path']),
-                is_null($profile->curlInfo) ? 0 : \round(intval($profile->curlInfo['total_time_us']) / 10) / 100,
-            ];
-        }
-        $table
-            ->setHeaders([
-                'Summary',
-                'Path',
-                'Total(ms)',
-            ])->addRows($rows)
-            ->render();
+        (new TableReporter($io))->report($profiler);
 
         return Command::SUCCESS;
     }

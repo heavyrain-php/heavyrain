@@ -6,13 +6,17 @@
 
 declare(strict_types=1);
 
-namespace Heavyrain\Executor;
+namespace Heavyrain\Scenario;
 
 use JsonSerializable;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
+/**
+ * Serializable HTTP result
+ * data is stored as array to reduce memory comsumption
+ */
 final class HttpResult implements JsonSerializable
 {
     /**
@@ -44,7 +48,8 @@ final class HttpResult implements JsonSerializable
      *
      * @var null|array{
      *   message: string,
-     *   code: int|string
+     *   code: int|string,
+     *   previousMessage: ?string
      * }
      */
     public readonly ?array $exception;
@@ -56,9 +61,13 @@ final class HttpResult implements JsonSerializable
      */
     public readonly ?array $curlInfo;
 
+    /** @var bool True if assertion has completed */
+    private bool $assertionCompleted = false;
+
+    /** @var bool True if assertion has succeeded */
+    private bool $assertionSucceeded = false;
+
     public function __construct(
-        public readonly bool $successRequest,
-        public readonly string $summary,
         RequestInterface $request,
         ?ResponseInterface $response = null,
         ?Throwable $exception = null,
@@ -68,6 +77,17 @@ final class HttpResult implements JsonSerializable
         $this->response = $this->createResponseToArray($response);
         $this->exception = $this->createExceptionToArray($exception);
         $this->curlInfo = $curlInfo;
+    }
+
+    public function completeAssertion(bool $succeeded = true): void
+    {
+        $this->assertionCompleted = true;
+        $this->assertionSucceeded = $succeeded;
+    }
+
+    public function isSucceeded(): bool
+    {
+        return $this->assertionCompleted && $this->assertionSucceeded;
     }
 
     /**
@@ -122,7 +142,8 @@ final class HttpResult implements JsonSerializable
      * @param Throwable|null $exception
      * @return null|array{
      *   message: string,
-     *   code: int|string
+     *   code: int|string,
+     *   previousMessage: ?string
      * }
      */
     private static function createExceptionToArray(?Throwable $exception): ?array
@@ -134,6 +155,7 @@ final class HttpResult implements JsonSerializable
         return [
             'message' => $exception->getMessage(),
             'code' => $exception->getCode(),
+            'previousMessage' => $exception->getPrevious()?->getMessage(),
         ];
     }
 
@@ -144,6 +166,8 @@ final class HttpResult implements JsonSerializable
             'response' => $this->response,
             'exception' => $this->exception,
             'curlInfo' => $this->curlInfo,
+            'assertionCompleted' => $this->assertionCompleted,
+            'assertionSucceeded' => $this->assertionSucceeded,
         ];
     }
 }

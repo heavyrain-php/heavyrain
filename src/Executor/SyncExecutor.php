@@ -8,22 +8,21 @@ declare(strict_types=1);
 
 namespace Heavyrain\Executor;
 
+use Heavyrain\Scenario\HttpProfiler;
 use Heavyrain\Scenario\InstructorInterface;
 use Heavyrain\Scenario\Instructors\PsrInstructor;
 use Heavyrain\Support\DefaultHttpBuilder;
+use Psr\Http\Message\RequestInterface;
 use ReflectionFunction;
-use SplQueue;
 
-class Executor
+class SyncExecutor
 {
-    /** @var SplQueue<HttpResult> $profiles */
-    private SplQueue $profiles;
-
     private InstructorInterface $inst;
 
     public function __construct(
         private readonly ExecutorConfig $config,
         private readonly ReflectionFunction $scenarioFunction,
+        private readonly HttpProfiler $profiler,
     ) {
         $builder = new DefaultHttpBuilder();
         $client = $builder->buildClient(null, [
@@ -32,18 +31,11 @@ class Executor
             'timeout' => $config->timeout,
             'expose_curl_info' => true,
         ]);
-        /** @var SplQueue<HttpResult> */
-        $this->profiles = new SplQueue();
         $this->inst = new PsrInstructor(
-            $builder->getRequestFactory()->createRequest('GET', $this->config->baseUri),
+            $this->createDefaultRequest($builder),
             $client,
+            $this->profiler,
         );
-    }
-
-    /** @return SplQueue<HttpResult> */
-    public function getProfiles(): SplQueue
-    {
-        return $this->profiles;
     }
 
     public function execute(): void
@@ -51,7 +43,22 @@ class Executor
         try {
             $this->scenarioFunction->invoke($this->inst);
         } catch (\Throwable $e) {
-            // TODO: Record last API is failed
+            $this->profiler->profileException($e);
         }
+    }
+
+    private function createDefaultRequest(DefaultHttpBuilder $builder): RequestInterface
+    {
+        $request = $builder->getRequestFactory()->createRequest('GET', $this->config->baseUri);
+        foreach ($this->config->defaultHeaders as $name => $value) {
+            $request = $request->withHeader($name, $value);
+        }
+        if (!$request->hasHeader('Accept')) {
+            $request = $request->withHeader('Accept', '*/*');
+        }
+        if (!$request->hasHeader('User-Agent')) {
+            $request = $request->withHeader('User-Agent', 'heavyrain/0.0.1');
+        }
+        return $request;
     }
 }

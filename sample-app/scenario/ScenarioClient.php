@@ -25,28 +25,23 @@ final class ScenarioClient
         return $this->inst->postJson(
             path: '/json',
             body: $body,
-            headers: ['Accept' => 'application/json; charset=UTF-8'],
         );
     }
 
     public function getUsers(int $userId): Response
     {
-        return $this->inst->get(
+        return $this->inst->getJson(
             path: '/users/' . $userId,
             headers: [
                 'Path-Tag' => '/users/{userId}',
-                'Accept' => 'application/json; charset=UTF-8',
             ],
         );
     }
 
     public function getPosts(int $postId): Response
     {
-        return $this->inst->get(
+        return $this->inst->getJson(
             path: '/posts/?' . $this->createQuery(\compact('postId')),
-            headers: [
-                'Accept' => 'application/json; charset=UTF-8',
-            ],
         );
     }
 
