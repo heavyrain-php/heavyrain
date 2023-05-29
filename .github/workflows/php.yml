@@ -23,7 +23,7 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: "Cache tools installed with PHIVE"
-        uses: "actions/cache@v2.1.2"
+        uses: "actions/cache@v3"
         with:
           path: "${{ runner.temp }}/.phive"
           key: "php-${{ matrix.php-version }}-phive-${{ hashFiles('.phive/phars.xml') }}"
