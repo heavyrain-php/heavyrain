@@ -2,9 +2,8 @@ name: PHP Composer
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    tags:
+      - v*
 
 permissions:
   contents: read
@@ -22,5 +21,13 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Run CI script
-        run: composer run-script ci
+      - name: Download box project phar
+        run: curl -LO https://github.com/box-project/box/releases/download/4.3.8/box.phar
+
+      - name: Build phar archive
+        run: composer build
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: heavyrain.phar
+          path: bin/heavyrain.phar
