@@ -22,11 +22,25 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Download phive
-        run: test -f ./phive.phar || curl -fLO https://phar.io/releases/phive.phar
+      - name: "Cache tools installed with PHIVE"
+        uses: "actions/cache@v2.1.2"
+        with:
+          path: "${{ runner.temp }}/.phive"
+          key: "php-${{ matrix.php-version }}-phive-${{ hashFiles('.phive/phars.xml') }}"
+          restore-keys: "php-${{ matrix.php-version }}-phive-"
 
-      - name: Install phars
-        run: php phive.phar install --force-accept-unsigned
+      - name: "Install PHIVE"
+        uses: "szepeviktor/phive@v1"
+        with:
+          home: "${{ runner.temp }}/.phive"
+          binPath: "${{ github.workspace }}/tools/phive"
+
+      - name: "Install PHP tools with PHIVE"
+        uses: "szepeviktor/phive-install@v1"
+        with:
+          home: "${{ runner.temp }}/.phive"
+          binPath: "${{ github.workspace }}/tools/phive"
+          trustGpgKeys: "E82B2FB314E9906E,12CE0F1D262429A5,2DF45277AEF09A2F"
 
       - name: Run CI script
         run: composer run-script ci

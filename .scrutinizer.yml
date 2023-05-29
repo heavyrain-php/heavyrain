@@ -1,0 +1,41 @@
+build:
+  image: default-bionic
+  environment:
+    timezone: "Asia/Tokyo"
+  dependencies:
+    before:
+      - wget -O composer.phar https://getcomposer.org/composer.phar
+      - chmod +x composer.phar
+      - ./composer.phar install
+      - ./tools/phive --no-progress --home ./.phive install --trust-gpg-keys E82B2FB314E9906E,12CE0F1D262429A5,2DF45277AEF09A2F --force-accept-unsigned
+  tests:
+    override:
+      - command: ./composer.phar test -- --coverage-clover=clover.xml
+        coverage:
+          file: clover.xml
+          format: php-clover
+  nodes:
+    analysis:
+      tests:
+        override:
+          - js-scrutinizer-run
+          - php-scrutinizer-run
+
+          - command: ./tools/psalm --report=checkstyle-psalm.xml
+            analysis:
+              file: checkstyle-psalm.xml
+              format: "general-checkstyle"
+
+          - store-in-cache repository "php-cs-fixer" .php-cs-fixer.cache
+          - restore-from-cache repository "php-cs-fixer"
+          - exists-in-cache repository "php-cs-fixer"
+
+          - command: ./tools/php-cs-fixer fix --dry-run --format=checkstyle . > checkstyle-php-cs-fixer.xml
+            analysis:
+              file: checkstyle-php-cs-fixer.xml
+              format: "general-checkstyle"
+
+filter:
+  excluded_paths:
+    - "http-client-benchmark/"
+    - "sample-app/"
