@@ -25,13 +25,15 @@ class SyncExecutor
         private readonly HttpProfiler $profiler,
     ) {
         $builder = new DefaultHttpBuilder();
+        // TODO: Override option from outside
         $client = $builder->buildClient(null, [
-            'allow_redirects' => false,
+            'allow_redirects' => true,
+            'expose_curl_info' => true,
             'verify' => $config->sslVerify,
             'timeout' => $config->timeout,
-            'expose_curl_info' => true,
         ]);
         $this->inst = new PsrInstructor(
+            $builder->getUriFactory(),
             $this->createDefaultRequest($builder),
             $client,
             $this->profiler,
@@ -49,16 +51,25 @@ class SyncExecutor
 
     private function createDefaultRequest(DefaultHttpBuilder $builder): RequestInterface
     {
-        $request = $builder->getRequestFactory()->createRequest('GET', $this->config->baseUri);
-        foreach ($this->config->defaultHeaders as $name => $value) {
-            $request = $request->withHeader($name, $value);
-        }
+        $request = $this
+            ->config
+            ->scenarioConfig
+            ->getDefaultRequest(
+                $builder->getRequestFactory(),
+                $this->config->baseUri,
+            );
+
         if (!$request->hasHeader('Accept')) {
             $request = $request->withHeader('Accept', '*/*');
         }
-        if (!$request->hasHeader('User-Agent')) {
-            $request = $request->withHeader('User-Agent', 'heavyrain/0.0.1');
-        }
+        $request = $request->withHeader(
+            'User-Agent',
+            \sprintf(
+                '%s %s',
+                $this->config->userAgentBase,
+                $this->config->scenarioConfig->getScenarioName(),
+            ),
+        );
         return $request;
     }
 }

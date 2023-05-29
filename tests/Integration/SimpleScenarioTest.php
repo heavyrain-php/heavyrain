@@ -36,7 +36,8 @@ final class SimpleScenarioTest extends TestCase
         $builder = new DefaultHttpBuilder();
         $profiler = new HttpProfiler();
         $inst = new PsrInstructor(
-            $builder->getRequestFactory()->createRequest('GET', '/'),
+            $builder->getUriFactory(),
+            $builder->getRequestFactory()->createRequest('GET', ''),
             $builder->buildClient($clientMock),
             $profiler,
         );

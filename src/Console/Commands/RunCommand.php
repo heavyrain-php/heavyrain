@@ -12,9 +12,9 @@ use Closure;
 use Heavyrain\Executor\ExecutorConfig;
 use Heavyrain\Executor\SyncExecutor;
 use Heavyrain\Reporters\TableReporter;
+use Heavyrain\Scenario\DefaultScenarioConfig;
 use Heavyrain\Scenario\HttpProfiler;
-use Heavyrain\Scenario\RequestException;
-use Heavyrain\Scenario\ResponseAssertionException;
+use Heavyrain\Scenario\ScenarioConfigInterface;
 use ReflectionFunction;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -42,8 +42,13 @@ final class RunCommand extends Command
                 InputArgument::REQUIRED,
                 'Request base URI',
             )->addOption(
+                'config',
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'PHP filename for scenario config',
+            )->addOption(
                 'timeout',
-                null,
+                't',
                 InputOption::VALUE_REQUIRED,
                 'Request timeout seconds',
                 0.0,
@@ -62,12 +67,13 @@ final class RunCommand extends Command
 
         /** @var string $baseUri */
         $baseUri = $input->getArgument('base-uri');
-        $timeout = floatval($input->getOption('timeout'));
-        $noVerify = boolval($input->getOption('no-verify'));
+        $timeout = \floatval($input->getOption('timeout'));
+        $noVerify = \boolval($input->getOption('no-verify'));
 
         /** @var string $scenarioFileName */
         $scenarioFileName = $input->getArgument('scenario-php-file');
-        $scenarioFilePath = sprintf('%s/%s', $cwd, $scenarioFileName);
+        $scenarioFilePath = \sprintf('%s/%s', $cwd, $scenarioFileName);
+
         $io = new SymfonyStyle($input, $output);
 
         if (!\str_ends_with($scenarioFilePath, '.php') || !\file_exists($scenarioFilePath)) {
@@ -84,20 +90,57 @@ final class RunCommand extends Command
         }
         $scenarioFunction = new ReflectionFunction($func);
         if (\method_exists($scenarioFunction, 'isStatic') && !$scenarioFunction->isStatic()) {
-            $io->warning('Closure should be static: `return static function(...`');
+            $io->warning('Scenario Closure should be static: `return static function(...`');
+        }
+
+        /** @var ScenarioConfigInterface */
+        $scenarioConfig = new DefaultScenarioConfig();
+        /** @var ?string $scenarioConfigFilePath */
+        $scenarioConfigFilePath = $input->getOption('config');
+        if (!\is_null($scenarioConfigFilePath)) {
+            if (!\str_ends_with($scenarioConfigFilePath, '.php') || !\file_exists($scenarioConfigFilePath)) {
+                $io->error(\sprintf('%s file not found', $scenarioConfigFilePath));
+                return Command::INVALID;
+            }
+            assert(\file_exists($scenarioConfigFilePath)); // for psalm
+
+            /** @var mixed */
+            $scenarioConfigFunc = require $scenarioConfigFilePath;
+            if (!$scenarioConfigFunc instanceof Closure) {
+                $io->error('config must return Closure');
+                return Command::INVALID;
+            }
+            $scenarioConfigReflection = new ReflectionFunction($scenarioConfigFunc);
+            if (\method_exists($scenarioConfigReflection, 'isStatic') && !$scenarioConfigReflection->isStatic()) {
+                $io->warning('Config Closure should be static: `return static function(...`');
+            }
+            /** @var mixed */
+            $scenarioConfig = $scenarioConfigReflection->invoke();
+            if (!$scenarioConfig instanceof ScenarioConfigInterface) {
+                $io->error('Config Closure must return Heavyrain\Scenario\ScenarioConfigInterface');
+                return Command::INVALID;
+            }
         }
 
         $config = new ExecutorConfig(
             $baseUri,
+            $scenarioConfig,
+            \sprintf(
+                '%s/%s',
+                $this->getApplication()?->getName() ?? 'heavyrain',
+                $this->getApplication()?->getVersion() ?? 'unknown',
+            ),
             !$noVerify,
             $timeout,
         );
         $profiler = new HttpProfiler();
+
+        // TODO: Select executor
         $executor = new SyncExecutor($config, $scenarioFunction, $profiler);
 
-        // TODO: concurrency
         $executor->execute();
 
+        // TODO: Select reporter
         (new TableReporter($io))->report($profiler);
 
         return Command::SUCCESS;

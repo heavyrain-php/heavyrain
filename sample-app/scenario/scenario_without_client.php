@@ -14,14 +14,16 @@ return static function (InstructorInterface $inst): void {
         ->assertHeaderHas('Content-Length', '27')
         ->assertContentHas('Hello world.');
 
-    $inst->post('/json')
-        ->assertStatusCode(400)
-        ->assertIsJson();
-
     $inst->postJson('/json', ['a' => 'is b'])
         ->assertOk()
         ->assertJsonHas('hello', 'world.');
 
     $inst->get('/undefinedpath')
         ->assertStatusCode(404);
+
+    $inst->getJson('/users/1')
+        ->assertOk();
+
+    $inst->getJson('/posts/?postId=2')
+        ->assertOk();
 };

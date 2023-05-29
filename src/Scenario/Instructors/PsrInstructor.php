@@ -15,17 +15,16 @@ use Heavyrain\Scenario\Instructions\WaitInstruction;
 use Heavyrain\Scenario\Response;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
  * PSR-based instructor
  */
 class PsrInstructor implements InstructorInterface
 {
-    /**
-     * @param RequestInterface $baseRequest Base request instance
-     * @param ClientInterface  $client
-     */
     public function __construct(
+        private readonly UriFactoryInterface $uriFactory,
         private readonly RequestInterface $baseRequest,
         private readonly ClientInterface $client,
         private readonly HttpProfiler $profiler,
@@ -169,7 +168,7 @@ class PsrInstructor implements InstructorInterface
             $request->getBody()->write($body);
         }
         $request = $request->withMethod($method)
-            ->withUri($request->getUri()->withPath($path))
+            ->withUri($this->makeUri($request->getUri(), $path))
             ->withProtocolVersion($version);
 
         if ($jsonRequest && !$request->hasHeader('Content-Type')) {
@@ -187,5 +186,11 @@ class PsrInstructor implements InstructorInterface
         }
 
         return $request;
+    }
+
+    protected function makeUri(UriInterface $uri, string $path): UriInterface
+    {
+        // TODO: Support authority
+        return $this->uriFactory->createUri(\sprintf('%s%s', $uri->__toString(), $path));
     }
 }

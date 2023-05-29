@@ -14,7 +14,7 @@ return static function (InstructorInterface $inst): void {
     $client = new ScenarioClient($inst);
     $client->getIndex()
         ->assertOk()
-        ->assertHeaderHas('Content-Length', '12')
+        ->assertHeaderHas('Content-Length', '27')
         ->assertContentHas('Hello world.');
 
     $client->postJson(['a' => 'is b'])

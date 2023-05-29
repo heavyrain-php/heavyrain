@@ -15,11 +15,22 @@ final class ScenarioClient
     {
     }
 
+    /**
+     * GET /
+     *
+     * @return Response
+     */
     public function getIndex(): Response
     {
         return $this->inst->get('/');
     }
 
+    /**
+     * POST /json
+     *
+     * @param array $body
+     * @return Response
+     */
     public function postJson(array $body): Response
     {
         return $this->inst->postJson(
@@ -28,6 +39,12 @@ final class ScenarioClient
         );
     }
 
+    /**
+     * GET /users/{userId}
+     *
+     * @param integer $userId
+     * @return Response
+     */
     public function getUsers(int $userId): Response
     {
         return $this->inst->getJson(
@@ -38,6 +55,12 @@ final class ScenarioClient
         );
     }
 
+    /**
+     * GET /posts/?postId=
+     *
+     * @param integer $postId
+     * @return Response
+     */
     public function getPosts(int $postId): Response
     {
         return $this->inst->getJson(
