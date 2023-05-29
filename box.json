@@ -5,6 +5,8 @@
     "http-client-benchmark",
     "sample-app",
     "tests",
+    "tools",
+    "web",
     ".editorconfig",
     ".gitignore",
     "*.cache",
