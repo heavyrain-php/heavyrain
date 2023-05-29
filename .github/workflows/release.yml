@@ -21,6 +21,12 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
+      - name: Download phive
+        run: test -f ./phive.phar || curl -fLO https://phar.io/releases/phive.phar
+
+      - name: Install phars
+        run: php phive.phar install
+
       - name: Build phar archive
         run: composer build
 
