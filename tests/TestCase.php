@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Heavyrain;
+namespace Heavyrain\Tests;
 
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
 

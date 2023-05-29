@@ -8,16 +8,17 @@ declare(strict_types=1);
 
 namespace Heavyrain\Executor;
 
+use Buzz\Exception\NetworkException;
 use Buzz\Exception\RequestException;
 use Buzz\Middleware\MiddlewareInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
-use SplStack;
+use SplQueue;
 
 class HttpRequestProfilerMiddleware implements MiddlewareInterface
 {
-    public function __construct(private SplStack $profiles)
+    public function __construct(private readonly SplQueue $profiles)
     {
     }
 
@@ -25,10 +26,10 @@ class HttpRequestProfilerMiddleware implements MiddlewareInterface
     public function handleRequest(RequestInterface $request, callable $next)
     {
         try {
-            return $next($request);
+            // Do nothing
         } catch (RequestException $e) {
             // Handle request fail
-            $this->profiles->push(new HttpResult(
+            $this->profiles->enqueue(new HttpResult(
                 false,
                 \sprintf('Failed to request method=%s uri=%s', $e->getRequest()->getMethod(), $e->getRequest()->getUri()->__toString()),
                 $request,
@@ -36,11 +37,21 @@ class HttpRequestProfilerMiddleware implements MiddlewareInterface
                 $e,
                 null,
             ));
+        } catch (NetworkException $e) {
+            // Handle network error
+            $this->profiles->enqueue(new HttpResult(
+                false,
+                'NetworkError',
+                $request,
+                null,
+                $e,
+                null,
+            ));
         } catch (\Throwable $e) {
             // Handle unknown error
-            $this->profiles->push(new HttpResult(
+            $this->profiles->enqueue(new HttpResult(
                 false,
-                \sprintf('Unknown request error message=%s', $e->getMessage()),
+                \sprintf('UnknownError class=%s', \get_class($e)),
                 $request,
                 null,
                 $e,
@@ -73,7 +84,7 @@ class HttpRequestProfilerMiddleware implements MiddlewareInterface
                 throw new RuntimeException($message, 2);
             }
 
-            $this->profiles->push(new HttpResult(
+            $this->profiles->enqueue(new HttpResult(
                 true,
                 'Ok',
                 $request,
@@ -82,7 +93,7 @@ class HttpRequestProfilerMiddleware implements MiddlewareInterface
                 $curlInfo,
             ));
         } catch (\Throwable $e) {
-            $this->profiles->push(new HttpResult(
+            $this->profiles->enqueue(new HttpResult(
                 true,
                 $e->getMessage(),
                 $request,

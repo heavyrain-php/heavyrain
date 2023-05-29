@@ -12,12 +12,12 @@ use Heavyrain\Scenario\InstructorInterface;
 use Heavyrain\Scenario\Instructors\PsrInstructor;
 use Heavyrain\Support\DefaultHttpBuilder;
 use ReflectionFunction;
-use SplStack;
+use SplQueue;
 
 class Executor
 {
-    /** @var SplStack<HttpResult> $profiles */
-    private SplStack $profiles;
+    /** @var SplQueue<HttpResult> $profiles */
+    private SplQueue $profiles;
 
     private InstructorInterface $inst;
 
@@ -32,19 +32,16 @@ class Executor
             'timeout' => $config->timeout,
             'expose_curl_info' => true,
         ]);
-        /** @var SplStack<HttpResult> */
-        $this->profiles = new SplStack();
-        $client->addMiddleware(new HttpRequestProfilerMiddleware($this->profiles));
+        /** @var SplQueue<HttpResult> */
+        $this->profiles = new SplQueue();
         $this->inst = new PsrInstructor(
-            $builder->getRequestFactory(),
-            $builder->getStreamFactory(),
+            $builder->getRequestFactory()->createRequest('GET', $this->config->baseUri),
             $client,
-            $this->config->baseUri,
         );
     }
 
-    /** @return SplStack<HttpResult> */
-    public function getProfiles(): SplStack
+    /** @return SplQueue<HttpResult> */
+    public function getProfiles(): SplQueue
     {
         return $this->profiles;
     }
@@ -54,7 +51,7 @@ class Executor
         try {
             $this->scenarioFunction->invoke($this->inst);
         } catch (\Throwable $e) {
-            // Do nothing
+            // TODO: Record last API is failed
         }
     }
 }

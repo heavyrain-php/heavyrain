@@ -15,5 +15,5 @@ return static function (InstructorInterface $inst): void {
     $response = $inst->get('/');
     $response->assertOk();
 
-    $inst->waitSec(1);
+    $inst->waitSec(0.1);
 };

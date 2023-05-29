@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Heavyrain\Integration;
+namespace Heavyrain\Tests\Integration;
 
 use Buzz\Client\BuzzClientInterface;
 use Heavyrain\Scenario\Instructions\HttpRequestInstruction;
@@ -14,7 +14,7 @@ use Heavyrain\Scenario\Instructions\WaitInstruction;
 use Heavyrain\Scenario\InstructorInterface;
 use Heavyrain\Scenario\Instructors\PsrInstructor;
 use Heavyrain\Support\DefaultHttpBuilder;
-use Heavyrain\TestCase;
+use Heavyrain\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
@@ -37,10 +37,8 @@ final class SimpleScenarioTest extends TestCase
             ->willReturn($responseMock);
         $builder = new DefaultHttpBuilder();
         $inst = new PsrInstructor(
-            $builder->getRequestFactory(),
-            $builder->getStreamFactory(),
+            $builder->getRequestFactory()->createRequest('GET', '/'),
             $builder->buildClient($clientMock),
-            '',
         );
 
         $func = static function (InstructorInterface $inst): void {

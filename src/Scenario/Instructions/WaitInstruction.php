@@ -22,6 +22,8 @@ class WaitInstruction implements InstructionInterface
 
     public function execute(): void
     {
-        // TODO
+        /** @var int<0, max> $microsec */
+        $microsec = \intval(\abs(\round($this->sec * 1000.0 * 1000.0, 0)));
+        usleep($microsec);
     }
 }

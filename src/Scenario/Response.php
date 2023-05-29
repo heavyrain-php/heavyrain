@@ -53,6 +53,38 @@ class Response
         return $this->rawResponse;
     }
 
+    public function assertJsonHas(string $key, mixed $expected): self
+    {
+        $this->assertJsonHasKey($key);
+        $json = $this->getJson();
+        \assert(\is_float($expected) || \is_int($expected) || \is_string($expected));
+        $this->assertTrue(
+            $json[$key] === $expected,
+            \sprintf('Invalid JSON key=%s value=%s expected=%s', $key, \json_encode($json[$key], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), $expected),
+        );
+        return $this;
+    }
+
+    public function assertJsonHasKey(string $key): self
+    {
+        $json = $this->getJson();
+        $this->assertTrue(
+            \array_key_exists($key, $json),
+            \sprintf('Undefined JSON key=%s', $key),
+        );
+        return $this;
+    }
+
+    public function assertContentHas(string $expected): self
+    {
+        $bodyStr = (string)$this->rawResponse->getBody();
+        $this->assertTrue(
+            \str_contains($bodyStr, $expected),
+            \sprintf('Failed to find %s in body', $expected),
+        );
+        return $this;
+    }
+
     public function assertIsJson(): self
     {
         return $this->assertContentType([

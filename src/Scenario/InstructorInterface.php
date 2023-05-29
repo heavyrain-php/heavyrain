@@ -44,6 +44,22 @@ interface InstructorInterface
     ): Response;
 
     /**
+     * Makes POST JSON HTTP request
+     *
+     * @param string $path
+     * @param array $body
+     * @param non-empty-string $version Protocol version
+     * @param array<non-empty-string, string|string[]> $headers
+     * @return Response
+     */
+    public function postJson(
+        string $path,
+        array $body,
+        string $version = '1.1',
+        array $headers = [],
+    ): Response;
+
+    /**
      * Makes HEAD HTTP request
      *
      * @param string $path
