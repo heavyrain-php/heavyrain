@@ -4,9 +4,19 @@ build:
     timezone: "Asia/Tokyo"
   dependencies:
     before:
-      - wget -O composer.phar https://getcomposer.org/composer.phar
-      - chmod +x composer.phar
-      - ./composer.phar install
+      # install composer
+      - wget https://raw.githubusercontent.com/composer/getcomposer.org/dadb501680566074a956f0a52f8e87a3612b0eae/web/installer -O - -q | php -- --quiet
+
+      # install phive
+      - wget -O phive.phar "https://phar.io/releases/phive.phar"
+      - wget -O phive.phar.asc "https://phar.io/releases/phive.phar.asc"
+      - gpg --keyserver hkps://keys.openpgp.org --recv-keys 0x6AF725270AB81E04D79442549D8A98B29B2D5D79
+      - gpg --verify phive.phar.asc phive.phar
+      - rm phive.phar.asc
+      - chmod +x phive.phar
+      - mv phive.phar ./tools/phive
+
+      # install phars
       - ./tools/phive --no-progress --home ./.phive install --trust-gpg-keys E82B2FB314E9906E,12CE0F1D262429A5,2DF45277AEF09A2F --force-accept-unsigned
   tests:
     override:
