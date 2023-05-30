@@ -18,6 +18,7 @@ use Heavyrain\Scenario\ScenarioConfigInterface;
 use ReflectionFunction;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -28,7 +29,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'run',
     description: 'Run scenario',
 )]
-final class RunCommand extends Command
+final class RunCommand extends Command implements SignalableCommandInterface
 {
     protected function configure(): void
     {
@@ -166,5 +167,15 @@ final class RunCommand extends Command
         (new TableReporter($io))->report($profiler);
 
         return Command::SUCCESS;
+    }
+
+    public function getSubscribedSignals(): array
+    {
+        return [\SIGINT, \SIGTERM];
+    }
+
+    public function handleSignal(int $signal): void
+    {
+        // only catch signal, do nothing
     }
 }
