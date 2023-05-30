@@ -29,13 +29,11 @@ final class ExecutorFactoryTest extends TestCase
     public function testCreateSync(): void
     {
         $config = new ExecutorConfig('', new DefaultScenarioConfig(), '');
-        /** @var \PHPUnit\Framework\MockObject\MockObject&ReflectionFunction */
-        $scenarioFunction = $this->createMock(ReflectionFunction::class);
         $profiler = new HttpProfiler();
         /** @var \PHPUnit\Framework\MockObject\MockObject&BuzzClientInterface */
         $buzzClient = $this->createMock(BuzzClientInterface::class);
 
-        $factory = new ExecutorFactory($config, $scenarioFunction, $profiler);
+        $factory = new ExecutorFactory($config, static fn () => 1, $profiler);
 
         $actual = $factory->createSync($buzzClient);
 

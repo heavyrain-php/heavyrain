@@ -17,7 +17,8 @@ interface ExecutorInterface
      * Executes scenario
      * It must not throw Exception
      *
+     * @param CancellationToken $token
      * @return void
      */
-    public function execute(): void;
+    public function execute(CancellationToken $token): void;
 }

@@ -12,6 +12,7 @@ use Closure;
 use Heavyrain\Executor\ExecutorConfig;
 use Heavyrain\Executor\ExecutorFactory;
 use Heavyrain\Reporters\TableReporter;
+use Heavyrain\Scenario\CancellationToken;
 use Heavyrain\Scenario\DefaultScenarioConfig;
 use Heavyrain\Scenario\HttpProfiler;
 use Heavyrain\Scenario\ScenarioConfigInterface;
@@ -31,6 +32,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class RunCommand extends Command implements SignalableCommandInterface
 {
+    private ?CancellationToken $cancelToken = null;
+
     protected function configure(): void
     {
         $this
@@ -155,6 +158,7 @@ final class RunCommand extends Command implements SignalableCommandInterface
             $timeout,
         );
         $profiler = new HttpProfiler();
+        $this->cancelToken = new CancellationToken();
 
         $io->definitionList(
             ['Base URI' => $baseUri],
@@ -167,7 +171,7 @@ final class RunCommand extends Command implements SignalableCommandInterface
         $io->writeln(\sprintf('Start execution at %s', \date('Y-m-d H:i:s')));
 
         // TODO: Select executor
-        (new ExecutorFactory($config, $scenarioFunction, $profiler))->createSync()->execute();
+        (new ExecutorFactory($config, $scenarioFunction->getClosure(), $profiler))->createSync()->execute($this->cancelToken);
 
         $io->writeln(\sprintf('End execution   at %s (%f seconds)', \date('Y-m-d H:i:s'), \microtime(true) - $startMicrosec));
 
@@ -184,6 +188,6 @@ final class RunCommand extends Command implements SignalableCommandInterface
 
     public function handleSignal(int $signal): void
     {
-        // only catch signal, do nothing
+        $this->cancelToken?->cancel();
     }
 }

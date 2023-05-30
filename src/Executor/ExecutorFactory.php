@@ -9,19 +9,19 @@ declare(strict_types=1);
 namespace Heavyrain\Executor;
 
 use Buzz\Client\BuzzClientInterface;
+use Closure;
 use Heavyrain\Scenario\ExecutorInterface;
 use Heavyrain\Scenario\HttpProfiler;
 use Heavyrain\Scenario\InstructorInterface;
 use Heavyrain\Scenario\Instructors\PsrInstructor;
 use Heavyrain\Support\DefaultHttpBuilder;
 use Psr\Http\Message\RequestInterface;
-use ReflectionFunction;
 
 final class ExecutorFactory
 {
     public function __construct(
         private readonly ExecutorConfig $config,
-        private readonly ReflectionFunction $scenarioFunction,
+        private readonly Closure $scenarioFunction,
         private readonly HttpProfiler $profiler,
     ) {
     }
