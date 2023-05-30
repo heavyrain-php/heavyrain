@@ -59,11 +59,17 @@ final class RunCommand extends Command implements SignalableCommandInterface
                 InputOption::VALUE_NONE,
                 'Enables SSL/TLS certificate verification',
             )->addOption(
-                'wait-after',
-                'w',
+                'wait-after-scenario',
+                null,
                 InputOption::VALUE_REQUIRED,
                 'Wait seconds after scenario',
                 1.0,
+            )->addOption(
+                'wait-after-request',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Wait seconds after request',
+                0.3,
             );
     }
 
@@ -80,7 +86,8 @@ final class RunCommand extends Command implements SignalableCommandInterface
         $baseUri = $input->getArgument('base-uri');
         $timeout = \floatval($input->getOption('timeout'));
         $verifyCert = \boolval($input->getOption('verify-cert'));
-        $waitAfterScenarioSec = \floatval($input->getOption('wait-after'));
+        $waitAfterScenarioSec = \floatval($input->getOption('wait-after-scenario'));
+        $waitAfterSendRequestSec = \floatval($input->getOption('wait-after-request'));
 
         /** @var string $scenarioFileName */
         $scenarioFileName = $input->getArgument('scenario-php-file');
@@ -143,6 +150,7 @@ final class RunCommand extends Command implements SignalableCommandInterface
             $scenarioConfig,
             $userAgentBase,
             $waitAfterScenarioSec,
+            $waitAfterSendRequestSec,
             $verifyCert,
             $timeout,
         );

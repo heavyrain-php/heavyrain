@@ -25,13 +25,15 @@ final class ExecutorConfigTest extends TestCase
         $scenarioConfig = new DefaultScenarioConfig();
         $userAgentBase = 'Custom User-Agent';
         $waitAfterScenarioSec = 1.0;
+        $waitAfterSendRequestSec = 2.0;
         $sslVerify = false;
-        $timeout = null;
+        $timeout = 1;
         $config = new ExecutorConfig(
             $baseUri,
             $scenarioConfig,
             $userAgentBase,
             $waitAfterScenarioSec,
+            $waitAfterSendRequestSec,
             $sslVerify,
             $timeout,
         );
@@ -40,6 +42,7 @@ final class ExecutorConfigTest extends TestCase
         self::assertSame($scenarioConfig, $config->scenarioConfig);
         self::assertSame($userAgentBase, $config->userAgentBase);
         self::assertSame($waitAfterScenarioSec, $config->waitAfterScenarioSec);
+        self::assertSame($waitAfterSendRequestSec, $config->waitAfterSendRequestSec);
         self::assertSame($sslVerify, $config->sslVerify);
         self::assertSame($timeout, $config->timeout);
     }
@@ -54,11 +57,20 @@ final class ExecutorConfigTest extends TestCase
     }
 
     #[Test]
+    public function testInvalidWaitAfterSendRequestSec(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('waitAfterSendRequestSec must be positive-numeric');
+
+        new ExecutorConfig('', new DefaultScenarioConfig(), '', 1, -1);
+    }
+
+    #[Test]
     public function testInvalidTimeout(): void
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('timeout must be positive-numeric');
 
-        new ExecutorConfig('', new DefaultScenarioConfig(), '', 1, false, -1);
+        new ExecutorConfig('', new DefaultScenarioConfig(), '', 1, 1, false, -1);
     }
 }

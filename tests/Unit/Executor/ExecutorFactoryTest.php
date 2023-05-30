@@ -28,7 +28,7 @@ final class ExecutorFactoryTest extends TestCase
 {
     public function testCreateSync(): void
     {
-        $config = new ExecutorConfig('', new DefaultScenarioConfig(), '', 0.0001);
+        $config = new ExecutorConfig('', new DefaultScenarioConfig(), '');
         /** @var \PHPUnit\Framework\MockObject\MockObject&ReflectionFunction */
         $scenarioFunction = $this->createMock(ReflectionFunction::class);
         $profiler = new HttpProfiler();

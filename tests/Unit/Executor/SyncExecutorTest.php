@@ -23,7 +23,7 @@ final class SyncExecutorTest extends TestCase
 {
     public function testExecute(): void
     {
-        $config = new ExecutorConfig('', new DefaultScenarioConfig(), '', 0.0001);
+        $config = new ExecutorConfig('', new DefaultScenarioConfig(), '', 0.0001, 0.0002);
         /** @var \PHPUnit\Framework\MockObject\MockObject&ReflectionFunction */
         $scenarioFunction = $this->createMock(ReflectionFunction::class);
         $profiler = new HttpProfiler();
@@ -41,7 +41,7 @@ final class SyncExecutorTest extends TestCase
 
     public function testExecuteFailed(): void
     {
-        $config = new ExecutorConfig('', new DefaultScenarioConfig(), '', 0.0001);
+        $config = new ExecutorConfig('', new DefaultScenarioConfig(), '', 0.0001, 0.0002);
         /** @var \PHPUnit\Framework\MockObject\MockObject&ReflectionFunction */
         $scenarioFunction = $this->createMock(ReflectionFunction::class);
         $profiler = new HttpProfiler();

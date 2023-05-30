@@ -47,6 +47,7 @@ final class ExecutorFactory
             'verify' => $this->config->sslVerify,
             'timeout' => $this->config->timeout,
         ]);
+        $client->addMiddleware(new WaitSendRequestMiddleware($this->config->waitAfterSendRequestSec));
 
         return new PsrInstructor(
             $builder->getUriFactory(),
