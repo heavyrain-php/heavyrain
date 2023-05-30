@@ -21,6 +21,7 @@ use Heavyrain\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 #[CoversClass(HttpProfiler::class)]
 #[CoversClass(PsrInstructor::class)]
@@ -34,8 +35,16 @@ final class SimpleScenarioTest extends TestCase
     #[Test]
     public function run_simple_scenario(): void
     {
+        /** @var \PHPUnit\Framework\MockObject\MockObject&StreamInterface $streamMock */
+        $streamMock = $this->createMock(StreamInterface::class);
+        $streamMock->expects($this->once())
+            ->method('__toString')
+            ->willReturn('');
         /** @var \PHPUnit\Framework\MockObject\MockObject&ResponseInterface $responseMock */
         $responseMock = $this->createMock(ResponseInterface::class);
+        $responseMock->expects($this->once())
+            ->method('getBody')
+            ->willReturn($streamMock);
         /** @var \PHPUnit\Framework\MockObject\MockObject&BuzzClientInterface $clientMock */
         $clientMock = $this->createMock(BuzzClientInterface::class);
         $clientMock->expects($this->once())

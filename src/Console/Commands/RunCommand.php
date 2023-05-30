@@ -10,7 +10,7 @@ namespace Heavyrain\Console\Commands;
 
 use Closure;
 use Heavyrain\Executor\ExecutorConfig;
-use Heavyrain\Executor\SyncExecutor;
+use Heavyrain\Executor\ExecutorFactory;
 use Heavyrain\Reporters\TableReporter;
 use Heavyrain\Scenario\DefaultScenarioConfig;
 use Heavyrain\Scenario\HttpProfiler;
@@ -53,28 +53,37 @@ final class RunCommand extends Command
                 'Request timeout seconds',
                 0.0,
             )->addOption(
-                'no-verify',
+                'verify-cert',
                 null,
                 InputOption::VALUE_NONE,
-                'Disables SSL certificate verification',
+                'Enables SSL/TLS certificate verification',
+            )->addOption(
+                'wait-after',
+                'w',
+                InputOption::VALUE_REQUIRED,
+                'Wait seconds after scenario',
+                1.0,
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $io = new SymfonyStyle($input, $output);
+
+        $io->title(\sprintf('Heavyrain Loadtest runner version:%s', $this->getApplication()?->getVersion() ?? 'dev'));
+
         $cwd = \getcwd();
-        assert($cwd !== false);
+        \assert($cwd !== false);
 
         /** @var string $baseUri */
         $baseUri = $input->getArgument('base-uri');
         $timeout = \floatval($input->getOption('timeout'));
-        $noVerify = \boolval($input->getOption('no-verify'));
+        $verifyCert = \boolval($input->getOption('verify-cert'));
+        $waitAfterScenarioSec = \floatval($input->getOption('wait-after'));
 
         /** @var string $scenarioFileName */
         $scenarioFileName = $input->getArgument('scenario-php-file');
         $scenarioFilePath = \sprintf('%s/%s', $cwd, $scenarioFileName);
-
-        $io = new SymfonyStyle($input, $output);
 
         if (!\str_ends_with($scenarioFilePath, '.php') || !\file_exists($scenarioFilePath)) {
             $io->error(\sprintf('%s file not found', $scenarioFilePath));
@@ -95,9 +104,10 @@ final class RunCommand extends Command
 
         /** @var ScenarioConfigInterface */
         $scenarioConfig = new DefaultScenarioConfig();
-        /** @var ?string $scenarioConfigFilePath */
-        $scenarioConfigFilePath = $input->getOption('config');
-        if (!\is_null($scenarioConfigFilePath)) {
+        /** @var ?string $scenarioConfigFileName */
+        $scenarioConfigFileName = $input->getOption('config');
+        if (!\is_null($scenarioConfigFileName)) {
+            $scenarioConfigFilePath = \sprintf('%s/%s', $cwd, $scenarioConfigFileName);
             if (!\str_ends_with($scenarioConfigFilePath, '.php') || !\file_exists($scenarioConfigFilePath)) {
                 $io->error(\sprintf('%s file not found', $scenarioConfigFilePath));
                 return Command::INVALID;
@@ -122,23 +132,35 @@ final class RunCommand extends Command
             }
         }
 
+        $userAgentBase = \sprintf(
+            '%s/%s',
+            $this->getApplication()?->getName() ?? 'heavyrain',
+            $this->getApplication()?->getVersion() ?? 'dev',
+        );
         $config = new ExecutorConfig(
             $baseUri,
             $scenarioConfig,
-            \sprintf(
-                '%s/%s',
-                $this->getApplication()?->getName() ?? 'heavyrain',
-                $this->getApplication()?->getVersion() ?? 'unknown',
-            ),
-            !$noVerify,
+            $userAgentBase,
+            $waitAfterScenarioSec,
+            $verifyCert,
             $timeout,
         );
         $profiler = new HttpProfiler();
 
-        // TODO: Select executor
-        $executor = new SyncExecutor($config, $scenarioFunction, $profiler);
+        $io->definitionList(
+            ['Base URI' => $baseUri],
+            ['Scenario' => $scenarioFilePath],
+            ['Scenario config' => $scenarioConfigFilePath ?? 'DefaultScenarioConfig'],
+            ['SSL/TLS verify' => $verifyCert ? 'yes' : 'no (default)'],
+        );
 
-        $executor->execute();
+        $startMicrosec = \microtime(true);
+        $io->writeln(\sprintf('Start execution at %s', \date('Y-m-d H:i:s')));
+
+        // TODO: Select executor
+        (new ExecutorFactory($config, $scenarioFunction, $profiler))->createSync()->execute();
+
+        $io->writeln(\sprintf('End execution   at %s (%f seconds)', \date('Y-m-d H:i:s'), \microtime(true) - $startMicrosec));
 
         // TODO: Select reporter
         (new TableReporter($io))->report($profiler);

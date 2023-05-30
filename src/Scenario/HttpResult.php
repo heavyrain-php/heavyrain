@@ -11,14 +11,17 @@ namespace Heavyrain\Scenario;
 use JsonSerializable;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Stringable;
 use Throwable;
 
 /**
  * Serializable HTTP result
  * data is stored as array to reduce memory comsumption
  */
-final class HttpResult implements JsonSerializable
+final class HttpResult implements JsonSerializable, Stringable
 {
+    private const CURL_INFO_HEADER = '__curl_info';
+
     /**
      * Request informarion
      *
@@ -38,6 +41,7 @@ final class HttpResult implements JsonSerializable
      * @var null|array{
      *   statusCode: int,
      *   reasonPhrase: string,
+     *   bodyLength: int,
      *   headers: array<string[]>
      * }
      */
@@ -47,12 +51,13 @@ final class HttpResult implements JsonSerializable
      * Exception information
      *
      * @var null|array{
+     *   name: string,
      *   message: string,
      *   code: int|string,
      *   previousMessage: ?string
      * }
      */
-    public readonly ?array $exception;
+    private ?array $exception;
 
     /**
      * Curl result information
@@ -68,15 +73,16 @@ final class HttpResult implements JsonSerializable
     private bool $assertionSucceeded = false;
 
     public function __construct(
+        public readonly float $startMicrotime,
+        public readonly float $endMicrotime,
         RequestInterface $request,
         ?ResponseInterface $response = null,
         ?Throwable $exception = null,
-        ?array $curlInfo = null,
     ) {
-        $this->request = $this->createRequestToArray($request);
-        $this->response = $this->createResponseToArray($response);
-        $this->exception = $this->createExceptionToArray($exception);
-        $this->curlInfo = $curlInfo;
+        $this->request = self::createRequestToArray($request);
+        $this->response = self::createResponseToArray($response);
+        $this->exception = self::createExceptionToArray($exception);
+        $this->curlInfo = self::convertCurlInfo($response);
     }
 
     public function completeAssertion(bool $succeeded = true): void
@@ -88,6 +94,16 @@ final class HttpResult implements JsonSerializable
     public function isSucceeded(): bool
     {
         return $this->assertionCompleted && $this->assertionSucceeded;
+    }
+
+    public function getException(): ?array
+    {
+        return $this->exception;
+    }
+
+    public function setException(Throwable $exception): void
+    {
+        $this->exception = self::createExceptionToArray($exception);
     }
 
     /**
@@ -120,6 +136,7 @@ final class HttpResult implements JsonSerializable
      * @return null|array{
      *   statusCode: int,
      *   reasonPhrase: string,
+     *   bodyLength: int,
      *   headers: array<string[]>
      * }
      */
@@ -129,9 +146,12 @@ final class HttpResult implements JsonSerializable
             return null;
         }
 
+        $body = $response->getBody()->__toString();
+
         return [
             'statusCode' => $response->getStatusCode(),
             'reasonPhrase' => $response->getReasonPhrase(),
+            'bodyLength' => \function_exists('mb_strlen') ? \mb_strlen($body) : \strlen($body),
             'headers' => $response->getHeaders(),
         ];
     }
@@ -141,6 +161,7 @@ final class HttpResult implements JsonSerializable
      *
      * @param Throwable|null $exception
      * @return null|array{
+     *   name: string,
      *   message: string,
      *   code: int|string,
      *   previousMessage: ?string
@@ -153,15 +174,42 @@ final class HttpResult implements JsonSerializable
         }
 
         return [
+            'name' => \get_class($exception),
             'message' => $exception->getMessage(),
             'code' => $exception->getCode(),
             'previousMessage' => $exception->getPrevious()?->getMessage(),
         ];
     }
 
+    /**
+     * Get Curl information from Response header
+     *
+     * @param ResponseInterface|null $response
+     * @return array|null
+     */
+    private static function convertCurlInfo(?ResponseInterface $response): ?array
+    {
+        if (\is_null($response) || !$response->hasHeader(self::CURL_INFO_HEADER)) {
+            return null;
+        }
+
+        $info = \json_decode(
+            $response->getHeaderLine(self::CURL_INFO_HEADER),
+            true,
+            512,
+            \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_UNICODE,
+        );
+
+        \assert(\is_array($info));
+
+        return $info;
+    }
+
     public function jsonSerialize(): mixed
     {
         return [
+            'startMicrotime' => $this->startMicrotime,
+            'endMicrotime' => $this->endMicrotime,
             'request' => $this->request,
             'response' => $this->response,
             'exception' => $this->exception,
@@ -169,5 +217,25 @@ final class HttpResult implements JsonSerializable
             'assertionCompleted' => $this->assertionCompleted,
             'assertionSucceeded' => $this->assertionSucceeded,
         ];
+    }
+
+    public function __toString(): string
+    {
+        $prefix = \sprintf('%s %s', $this->request['method'], $this->request['path']);
+
+        if (!\is_null($this->exception)) {
+            return \sprintf('%s: Exception: %s %s', $prefix, $this->exception['name'], $this->exception['message']);
+        } elseif (!$this->assertionCompleted) {
+            return \sprintf('%s: Warning: Assertion not completed', $prefix);
+        } elseif (!$this->assertionSucceeded) {
+            return \sprintf('%s: Warning: Assertion failed', $prefix);
+        }
+        \assert(!\is_null($this->response));
+        return \sprintf(
+            '%s: Succeded: %s %s',
+            $prefix,
+            $this->response['statusCode'],
+            $this->response['reasonPhrase'],
+        );
     }
 }

@@ -12,8 +12,6 @@ use Heavyrain\Scenario\InstructorInterface;
  * Simple scenario function
  */
 return static function (InstructorInterface $inst): void {
-    $response = $inst->get('/');
-    $response->assertOk();
-
+    $inst->get('/')->assertOk();
     $inst->waitSec(0.1);
 };

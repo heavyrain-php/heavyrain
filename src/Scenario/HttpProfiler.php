@@ -8,87 +8,83 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario;
 
-use Generator;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use SplQueue;
 use Throwable;
 
-class HttpProfiler
+/**
+ * HTTPResult profiler
+ * TODO: Aggregation by unixtime
+ * TODO: Aggregation by path(or Path-Tag request header)
+ * TODO: Aggregation by moving average method
+ */
+final class HttpProfiler
 {
-    private const CURL_INFO_HEADER = '__curl_info';
+    /** @var HttpResult[] */
+    private array $results;
 
-    /** @var SplQueue<HttpResult> */
-    private readonly SplQueue $queue;
+    /** @var Throwable[] */
+    private array $exceptions;
 
-    /** @var SplQueue<Throwable> */
-    private readonly SplQueue $exceptionQueue;
+    public function __construct()
+    {
+        $this->results = [];
+        $this->exceptions = [];
+    }
 
     /**
-     * @param SplQueue<HttpResult> $queue
-     * @param SplQueue<Throwable> $exceptionQueue
+     * Get HttpResults
+     *
+     * @return HttpResult[]
      */
-    public function __construct(
-        ?SplQueue $queue = null,
-        ?SplQueue $exceptionQueue = null,
-    ) {
-        /** @var SplQueue<HttpResult> */
-        $this->queue = $queue ?? new SplQueue();
-        /** @var SplQueue<Throwable> */
-        $this->exceptionQueue = $exceptionQueue ?? new SplQueue();
-    }
-
-    /** @return Generator<int, HttpResult, HttpResult, void> */
-    public function getResults(): Generator
+    public function getResults(): array
     {
-        foreach ($this->queue as $queue) {
-            yield $queue;
-        }
+        return [...$this->results];
     }
 
-    /** @return Generator<int, Throwable, Throwable, void> */
-    public function getExceptions(): Generator
+    /**
+     * Get Exceptions
+     *
+     * @return Throwable[]
+     */
+    public function getExceptions(): array
     {
-        foreach ($this->exceptionQueue as $exception) {
-            yield $exception;
-        }
+        return [...$this->exceptions];
     }
 
+    /**
+     * Profile Exception
+     *
+     * @param Throwable $exception
+     * @return void
+     */
     public function profileException(Throwable $exception): void
     {
-        $this->exceptionQueue->enqueue($exception);
+        $this->exceptions[] = $exception;
     }
 
+    /**
+     * Profile HttpResult
+     *
+     * @param float $startMicrotime
+     * @param float $endMicrotime
+     * @param RequestInterface $request
+     * @param ResponseInterface $response
+     * @return HttpResult
+     */
     public function profile(
+        float $startMicrotime,
+        float $endMicrotime,
         RequestInterface $request,
-        ?ResponseInterface $response = null,
-        ?Throwable $exception = null,
+        ResponseInterface $response,
     ): HttpResult {
         $result = new HttpResult(
+            $startMicrotime,
+            $endMicrotime,
             $request,
             $response,
-            $exception,
-            $this->getCurlInfo($response),
         );
-        $this->queue->enqueue($result);
+        $this->results[] = $result;
         return $result;
-    }
-
-    private function getCurlInfo(?ResponseInterface $response): ?array
-    {
-        if (\is_null($response) || !$response->hasHeader(self::CURL_INFO_HEADER)) {
-            return null;
-        }
-
-        $info = \json_decode(
-            $response->getHeaderLine(self::CURL_INFO_HEADER),
-            true,
-            512,
-            \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_UNICODE,
-        );
-
-        \assert(\is_array($info));
-
-        return $info;
     }
 }

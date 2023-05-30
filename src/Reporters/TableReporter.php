@@ -21,7 +21,6 @@ class TableReporter
 
     public function report(HttpProfiler $profiler): void
     {
-        // TODO: to Reporter class
         $table = $this->io->createTable();
         $rows = [];
         foreach ($profiler->getResults() as $profile) {
@@ -29,13 +28,13 @@ class TableReporter
                 continue;
             }
             $rows[] = [
-                \sprintf('%s %s', $profile->request['method'], $profile->request['path']),
+                $profile->request['method'],
+                $profile->request['path'],
                 \is_null($profile->curlInfo) ? 0 : \round(\intval($profile->curlInfo['total_time_us']) / 10) / 100,
-                $profile->isSucceeded(),
             ];
         }
         $table
-            ->setHeaders(['Path', 'Total(ms)', 'isSucceeded'])
+            ->setHeaders(['Method', 'Path', 'Total(ms)'])
             ->addRows($rows)
             ->render();
 

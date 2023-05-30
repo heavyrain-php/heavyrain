@@ -171,7 +171,10 @@ class Response
     {
         $this->result->completeAssertion($expected);
         if (!$expected) {
-            throw new ResponseAssertionException($this->rawResponse, $message);
+            $e = new ResponseAssertionException($this->rawResponse, $message);
+            $this->result->setException($e);
+            // Terminates this scenario
+            throw $e;
         }
         return $this;
     }

@@ -10,6 +10,9 @@ namespace Heavyrain\Tests;
 
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
 
+/**
+ * Heavyrain test case
+ */
 abstract class TestCase extends FrameworkTestCase
 {
 }

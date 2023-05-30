@@ -97,10 +97,16 @@ class PsrInstructor implements InstructorInterface
             $this->client,
             $request,
         );
+        $startMicrotime = \microtime(true);
+        \assert(\is_float($startMicrotime));
         $instruction->execute();
+        $endMicrotime = \microtime(true);
+        \assert(\is_float($endMicrotime));
         $response = $instruction->getResponse();
 
         $result = $this->profiler->profile(
+            $startMicrotime,
+            $endMicrotime,
             $request,
             $response,
         );
@@ -188,9 +194,26 @@ class PsrInstructor implements InstructorInterface
         return $request;
     }
 
-    protected function makeUri(UriInterface $uri, string $path): UriInterface
-    {
-        // TODO: Support authority
-        return $this->uriFactory->createUri(\sprintf('%s%s', $uri->__toString(), $path));
+    /**
+     * Makes new UriInterface using baseUri and path
+     *
+     * @param UriInterface $uri
+     * @param string       $path
+     * @return UriInterface
+     */
+    protected function makeUri(
+        UriInterface $uri,
+        string $path,
+        ?string $username = null,
+        ?string $password = null,
+    ): UriInterface {
+        $uri = $this
+            ->uriFactory
+            ->createUri(\sprintf('%s/%s', \rtrim($uri->__toString(), '/'), \ltrim($path, '/')));
+
+        if (!\is_null($username)) {
+            return $uri->withUserInfo($username, $password);
+        }
+        return $uri;
     }
 }
