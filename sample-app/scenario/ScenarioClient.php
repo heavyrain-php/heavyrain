@@ -11,7 +11,7 @@ use Heavyrain\Scenario\Response;
 
 final class ScenarioClient
 {
-    public function __construct(private readonly InstructorInterface $inst)
+    public function __construct(public readonly InstructorInterface $inst)
     {
     }
 
@@ -28,7 +28,7 @@ final class ScenarioClient
     /**
      * POST /json
      *
-     * @param array $body
+     * @param array{a: string} $body
      * @return Response
      */
     public function postJson(array $body): Response
@@ -77,7 +77,7 @@ final class ScenarioClient
         $qs = [];
         foreach ($params as $key => $value) {
             if (!\is_string($value)) {
-                throw new \RuntimeException('Invalid query string value=' . $value);
+                throw new \RuntimeException(\sprintf('Invalid query string value=%s', (string)$value));
             }
             $qs[] = \sprintf('%s=%s', $key, \urlencode($value));
         }

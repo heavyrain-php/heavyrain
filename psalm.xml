@@ -9,6 +9,7 @@
     findUnusedCode="false"
 >
     <projectFiles>
+        <directory name="sample-app/scenario" />
         <directory name="src" />
         <ignoreFiles>
             <directory name="vendor" />

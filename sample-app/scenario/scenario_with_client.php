@@ -6,16 +6,13 @@
 
 declare(strict_types=1);
 
-use Heavyrain\Scenario\InstructorInterface;
-
-require_once __DIR__ . '/ScenarioClient.php';
-
-return static function (InstructorInterface $inst): void {
-    $client = new ScenarioClient($inst);
+return static function (ScenarioClient $client): void {
     $client->getIndex()
         ->assertOk()
         ->assertHeaderHas('Content-Length', '27')
         ->assertContentHas('Hello world.');
+
+    $client->inst->waitSec(0.1);
 
     $client->postJson(['a' => 'is b'])
         ->assertOk()

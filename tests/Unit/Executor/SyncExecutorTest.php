@@ -14,11 +14,10 @@ use Heavyrain\Scenario\HttpProfiler;
 use Heavyrain\Scenario\InstructorInterface;
 use Heavyrain\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
-use ReflectionFunction;
 
-#[CoversClass(CancellationToken::class)]
-#[CoversClass(SyncExecutor::class)]
 #[CoversClass(ExecutorConfig::class)]
+#[CoversClass(SyncExecutor::class)]
+#[CoversClass(CancellationToken::class)]
 #[CoversClass(DefaultScenarioConfig::class)]
 #[CoversClass(HttpProfiler::class)]
 final class SyncExecutorTest extends TestCase
