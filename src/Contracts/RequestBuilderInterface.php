@@ -109,15 +109,17 @@ interface RequestBuilderInterface
      * Set URI query string
      *
      * @param array $query
-     * @psalm-param array<string, int|float|non-empty-string> $query
-     * @phpstan-param array<string, int|float|non-empty-string> $query
-     * @phan-param array<string, int|float|non-empty-string> $query
+     * @psalm-param array<non-empty-string, int|float|string> $query
+     * @phpstan-param array<non-empty-string, int|float|string> $query
+     * @phan-param array<non-empty-string, int|float|string> $query
      * @return self
      */
     public function query(array $query): self;
 
     /**
      * Set new UriInterface
+     *
+     * CAUTION: set Uri forcing to use this instance and other Uri parameters will be ignored
      *
      * @param UriInterface $uri
      * @return self
@@ -162,6 +164,31 @@ interface RequestBuilderInterface
     public function authorization(string $value): self;
 
     /**
+     * Set Content-Type: text/plain
+     *
+     * @return self
+     */
+    public function contentTypePlain(): self;
+
+    /**
+     * Set Content-Type: text/html
+     *
+     * @return self
+     */
+    public function contentTypeHtml(): self;
+
+    /**
+     * Set Content-Type: application/json; charset=UTF-8
+     *
+     * @param string|null $charset omits charset when null
+     * @psalm-param non-empty-string|null $charset
+     * @phpstan-param non-empty-string|null $charset
+     * @phan-param non-empty-string|null $charset
+     * @return self
+     */
+    public function contentTypeJson(?string $charset = 'UTF-8'): self;
+
+    /**
      * Set header Content-Type
      *
      * @param string $contentType
@@ -171,6 +198,38 @@ interface RequestBuilderInterface
      * @return self
      */
     public function contentType(string $contentType): self;
+
+    /**
+     * Set header Accept: *\/*
+     *
+     * @return self
+     */
+    public function acceptAll(): self;
+
+    /**
+     * Set header Accept: text/html
+     *
+     * @return self
+     */
+    public function acceptHtml(): self;
+
+    /**
+     * Set header Accept: text/*
+     *
+     * @return self
+     */
+    public function acceptText(): self;
+
+    /**
+     * Set header Accept: application/json; charset=UTF-8
+     *
+     * @param string|null $charset omits charset when null
+     * @psalm-param non-empty-string|null $charset
+     * @phpstan-param non-empty-string|null $charset
+     * @phan-param non-empty-string|null $charset
+     * @return self
+     */
+    public function acceptJson(?string $charset = 'UTF-8'): self;
 
     /**
      * Set header Accept
@@ -223,19 +282,19 @@ interface RequestBuilderInterface
     /**
      * Set JSON body
      *
-     * @param array|null $json
-     * @psalm-param array<array-key, mixed> $json
-     * @phpstan-param array<array-key, mixed> $json
-     * @phan-param array<array-key, mixed> $json
+     * @param mixed $json
+     * @param string|null $charset
+     * @psalm-param non-empty-string|null $charset
+     * @phpstan-param non-empty-string|null $charset
+     * @phan-param non-empty-string|null $charset
      * @param int $flags
      * @param int $depth
      * @psalm-param int<1, 2147483647> $depth
      * @phpstan-param int<1, 2147483647> $depth
      * @phan-param int<1, 2147483647> $depth
      * @return self
-     * @throws BodyEncodeExceptionInterface
      */
-    public function json(?array $json = null, int $flags = 0, int $depth = 512): self;
+    public function json(mixed $json, ?string $charset = 'UTF-8', int $flags = 0, int $depth = 512): self;
 
     /**
      * Set body

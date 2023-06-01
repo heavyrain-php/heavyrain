@@ -67,6 +67,8 @@
         "cs": "./tools/php-cs-fixer fix .",
         "test": "@php vendor/bin/phpunit",
         "coverage": "XDEBUG_MODE=coverage php vendor/bin/phpunit -d xdebug.mode=coverage --coverage-clover=clover.xml",
+        "coverage-html": "XDEBUG_MODE=coverage php vendor/bin/phpunit -d xdebug.mode=coverage --coverage-html=vendor/coverage-html",
+        "coverage-show": "php -S localhost:8082 -t vendor/coverage-html",
         "lint": [
             "@psalm",
             "@cs"

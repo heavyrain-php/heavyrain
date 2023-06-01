@@ -69,7 +69,7 @@ interface AssertableResponseInterface
      * @return self
      * @throws ResponseAssertionExceptionInterface
      */
-    public function assertBodyHas(string $needle): self;
+    public function assertBodyContains(string $needle): self;
 
     /**
      * Asserts Content-Type is HTML
@@ -114,6 +114,18 @@ interface AssertableResponseInterface
      * @throws ResponseAssertionExceptionInterface
      */
     public function assertHeader(string $name, string $value): self;
+
+    /**
+     * Asserts response header
+     *
+     * @param string $name case-insensitive header name
+     * @psalm-param non-empty-string $name
+     * @phpstan-param non-empty-string $name
+     * @phan-param non-empty-string $name
+     * @return self
+     * @throws ResponseAssertionExceptionInterface
+     */
+    public function assertHeaderHas(string $name): self;
 
     /**
      * Asserts status code is 200-299
