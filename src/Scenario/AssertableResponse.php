@@ -34,6 +34,87 @@ class AssertableResponse implements AssertableResponseInterface
         return $this->response;
     }
 
+    public function getJsonBody(int $depth = 512, int $flags = 0): array
+    {
+        $this->assertIsJson();
+
+        $body = $this->getBody();
+
+        if (\is_null($body)) {
+            throw new ResponseAssertionException($this->request, $this->response, 'Response body is empty');
+        }
+
+        /** @var null|bool|array */
+        $decoded = \json_decode($body, true, $depth, $flags);
+        $jsonLastError = \json_last_error();
+        $jsonLastErrorMsg = \json_last_error_msg();
+
+        if (\is_null($decoded) || \is_bool($decoded) || $jsonLastError !== \JSON_ERROR_NONE) {
+            throw new ResponseAssertionException(
+                $this->request,
+                $this->response,
+                \sprintf('Failed to decode JSON body code:%d message:%s', $jsonLastError, $jsonLastErrorMsg),
+            );
+        }
+
+        return $decoded;
+    }
+
+    public function getBody(): ?string
+    {
+        $body = (string)$this->response->getBody();
+
+        if ($body === '') {
+            return null;
+        }
+
+        return $body;
+    }
+
+    public function assertJsonHasKey(string|array $key): self
+    {
+        $json = $this->getJsonBody();
+
+        $keys = \is_array($key) ? $key : [$key];
+
+        /** @todo deep key by dot */
+        foreach ($keys as $k) {
+            $this->assertTrue(
+                \array_key_exists($k, $json),
+                \sprintf('json has key %s', $k),
+            );
+        }
+        return $this;
+    }
+
+    public function assertBodyContains(string $needle): self
+    {
+        return $this->assertTrue(
+            \str_contains($this->getbody() ?? '', $needle),
+            \sprintf('body contains %s', $needle),
+        );
+    }
+
+    public function assertIsHtml(): self
+    {
+        return $this->assertContentType('text/html');
+    }
+
+    public function assertIsJson(): self
+    {
+        return $this->assertContentType('application/json');
+    }
+
+    public function assertContentType(string $contentType): self
+    {
+        $separated = \explode(';', $this->response->getHeaderLine('Content-Type'), 2);
+
+        return $this->assertHeaderHas('Content-Type')->assertTrue(
+            $separated[0] === $contentType,
+            \sprintf('header Content-Type is %s, got %s', $contentType, $separated[0]),
+        );
+    }
+
     public function assertHeader(string $name, string $value): self
     {
         return $this->assertHeaderHas($name)->assertTrue(
@@ -65,18 +146,6 @@ class AssertableResponse implements AssertableResponseInterface
             $this->response->getStatusCode() === $code,
             \sprintf('response status code is %d, got %d', $code, $this->response->getStatusCode()),
         );
-    }
-
-    /**
-     * Asserts expected value is false
-     *
-     * @param bool $expected
-     * @param string $message
-     * @return self
-     */
-    protected function assertFalse(bool $expected, string $message): self
-    {
-        return $this->assertTrue(!$expected, $message);
     }
 
     /**
