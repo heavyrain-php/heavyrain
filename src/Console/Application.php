@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Heavyrain\Console;
 
+use Heavyrain\Console\Commands\GenerateStubCommand;
 use Heavyrain\Console\Commands\RunCommand;
 use Heavyrain\Console\Commands\WebCommand;
 use Symfony\Component\Console\Application as SymfonyApplication;
@@ -22,6 +23,7 @@ final class Application extends SymfonyApplication
     {
         parent::__construct(self::NAME, self::VERSION);
         $this->addCommands([
+            new GenerateStubCommand(),
             new RunCommand(),
             new WebCommand(),
         ]);
