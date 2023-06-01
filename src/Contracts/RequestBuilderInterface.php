@@ -227,10 +227,15 @@ interface RequestBuilderInterface
      * @psalm-param array<array-key, mixed> $json
      * @phpstan-param array<array-key, mixed> $json
      * @phan-param array<array-key, mixed> $json
-     * @param int|null $flags
+     * @param int $flags
+     * @param int $depth
+     * @psalm-param int<1, 2147483647> $depth
+     * @phpstan-param int<1, 2147483647> $depth
+     * @phan-param int<1, 2147483647> $depth
      * @return self
+     * @throws BodyEncodeExceptionInterface
      */
-    public function json(?array $json = null, ?int $flags = null): self;
+    public function json(?array $json = null, int $flags = 0, int $depth = 512): self;
 
     /**
      * Set body
