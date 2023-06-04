@@ -30,4 +30,6 @@
   <phar name="php-cs-fixer" version="^3.17" installed="3.17.0" location="./tools/php-cs-fixer" copy="false"/>
   <phar name="psalm" version="^5.12" installed="5.12.0" location="./tools/psalm" copy="false"/>
   <phar name="box" version="^4.3.8" installed="4.3.8" location="./tools/box" copy="false"/>
+  <phar name="phpstan" version="^1.10.15" installed="1.10.15" location="./tools/phpstan" copy="false"/>
+  <phar name="phan" version="^5.4.2" installed="5.4.2" location="./tools/phan" copy="false"/>
 </phive>

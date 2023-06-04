@@ -1,4 +1,6 @@
 /.phpunit.cache/
+/benchmarks/
+/sample-target-app/
 /vendor/
 composer.lock
 .php-cs-fixer.cache
