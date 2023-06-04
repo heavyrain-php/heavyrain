@@ -1,13 +1,76 @@
 # Heavyrain PHP - Loadtest tool
 
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/il-m-yamagishi/heavyrain-php/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/il-m-yamagishi/heavyrain-php/?branch=main) [![Code Coverage](https://scrutinizer-ci.com/g/il-m-yamagishi/heavyrain-php/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/il-m-yamagishi/heavyrain-php/?branch=main) [![Build Status](https://scrutinizer-ci.com/g/il-m-yamagishi/heavyrain-php/badges/build.png?b=main)](https://scrutinizer-ci.com/g/il-m-yamagishi/heavyrain-php/build-status/main) [![Code Intelligence Status](https://scrutinizer-ci.com/g/il-m-yamagishi/heavyrain-php/badges/code-intelligence.svg?b=main)](https://scrutinizer-ci.com/code-intelligence)
+__Heavyrain is loadtest/stresstest tool made with PHP.__
 
-Heavyrain is loadtest/stresstest tool made with PHP.
+You can test any HTTP services using scenario written in PHP.
 
 ## Install
 
-## Usage
+### Prerequisites
+
+- PHP 8.1.0+ (web and runner instance)
+- Any HTTP(S) service
+    - Main target is JSON API server.
+    - NOTE: Currently HTTP/3 is not supported due to lack of implementation of curl.
+
+You may add .gitignore lines below.
+
+```.gitignore
+/heavyrain.phar
+/_heavyrain.stub.php
+```
+
+### manually download phar(recommended)
 
 ```sh
-$ docker run TODO
+$ curl -fLO https://github.com/heavyrain-php/heavyrain/releases/download/v0.0.1/heavyrain.phar
+$ php heavyrain.phar help
+# Generate stub file for static analysis and IDE.
+$ php heavyrain.phar generate:stub
 ```
+
+### download phar using phive
+
+```sh
+$ phive install https://github.com/heavyrain-php/heavyrain.git
+$ ./tools/heavyrain help
+# Generate stub file for static analysis and IDE.
+$ ./tools/heavyrain generate:stub
+```
+
+### require using composer(not recommended)
+
+```sh
+$ composer require --dev heavyrain/heavyrain
+$ ./vendor/bin/heavyrain help
+# You may not do generate stub file because actual files exist in vendor.
+```
+
+## Create scenario
+
+```sh
+$ mkdir scenarios
+$ touch scenarios/sample_scenario.php
+```
+
+```php:scenarios/sample_scenario.php
+<?php
+
+declare(strict_types=1);
+
+use Heavyrain\Contracts\ClientInterface;
+
+// You should use `static function` for better performance.
+return static function (ClientInterface $cl): void {
+    $cl->get('/')->assertBodyContains('hello');
+};
+
+```
+
+## Execute
+
+### 1. Execute using Web GUI
+
+### 2. Execute using CLI
+
+## Report

@@ -21,16 +21,19 @@ class Client implements ClientInterface
 {
     public function __construct(
         protected readonly PsrClientInterface $client,
+        protected readonly RequestBuilderInterface $baseBuilder,
     ) {
-    }
-
-    public function builder(): RequestBuilderInterface
-    {
-
     }
 
     public function send(RequestInterface $request): AssertableResponseInterface
     {
         $response = $this->client->sendRequest($request);
+
+        return new AssertableResponse($request, $response);
+    }
+
+    public function with(): RequestBuilderInterface
+    {
+        return clone $this->baseBuilder;
     }
 }

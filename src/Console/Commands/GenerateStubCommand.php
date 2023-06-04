@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: 'generate:stub',
-    description: 'Generates stub interface file for static analysis',
+    description: 'Generates stub interface file for static analysis and IDE.',
 )]
 final class GenerateStubCommand extends Command
 {
