@@ -1,5 +1,5 @@
 {
-    "name": "il-m-yamagishi/heavyrain-php",
+    "name": "heavyrain-php/heavyrain",
     "description": "Loadtest/Stresstest tool made with PHP",
     "type": "project",
     "license": "MIT",
@@ -8,10 +8,10 @@
         "stresstest",
         "testing"
     ],
-    "homepage": "https://github.com/il-m-yamagishi/heavyrain-php/",
+    "homepage": "https://github.com/heavyrain-php/heavyrain/",
     "support": {
-        "issues": "https://github.com/il-m-yamagishi/heavyrain-php/issues",
-        "source": "https://github.com/il-m-yamagishi/heavyrain-php/"
+        "issues": "https://github.com/heavyrain-php/heavyrain/issues",
+        "source": "https://github.com/heavyrain-php/heavyrain/"
     },
     "bin": [
         "bin/heavyrain"
@@ -61,7 +61,7 @@
             "test -f ./phive.phar || curl -fLO https://phar.io/releases/phive.phar",
             "php phive.phar install"
         ],
-        "sample": "@php -S localhost:8081 -t sample-app/public",
+        "sample": "@php -S localhost:8081 -t sample-target-app/public",
         "build": "./tools/box compile",
         "psalm": "./tools/psalm",
         "cs": "./tools/php-cs-fixer fix .",

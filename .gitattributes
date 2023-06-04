@@ -1,10 +1,8 @@
 * text=auto
-*.css linguist-vendored
-*.tsx linguist-vendored
 
 .github/ export-ignore
-http-client-benchmark/ export-ignore
-sample-app/ export-ignore
+benchmarks/ export-ignore
+sample-target-app/ export-ignore
 tests/ export-ignore
 tools/* export-ignore
 web/ export-ignore
