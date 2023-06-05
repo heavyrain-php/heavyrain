@@ -4,7 +4,7 @@ __Heavyrain is loadtest/stresstest tool made with PHP.__
 
 You can test any HTTP services using scenario written in PHP.
 
-## Install
+## Installation
 
 ### Prerequisites
 
@@ -20,7 +20,7 @@ You may add .gitignore lines below.
 /_heavyrain.stub.php
 ```
 
-### manually download phar(recommended)
+### Download phar manually(**recommended**)
 
 ```sh
 $ curl -fLO https://github.com/heavyrain-php/heavyrain/releases/download/v0.0.1/heavyrain.phar
@@ -29,7 +29,7 @@ $ php heavyrain.phar help
 $ php heavyrain.phar generate:stub
 ```
 
-### download phar using phive
+### Download phar using phive
 
 ```sh
 $ phive install https://github.com/heavyrain-php/heavyrain.git
@@ -38,7 +38,7 @@ $ ./tools/heavyrain help
 $ ./tools/heavyrain generate:stub
 ```
 
-### require using composer(not recommended)
+### Require using composer(not recommended because of some dependencies)
 
 ```sh
 $ composer require --dev heavyrain/heavyrain
@@ -46,7 +46,7 @@ $ ./vendor/bin/heavyrain help
 # You may not do generate stub file because actual files exist in vendor.
 ```
 
-## Create scenario
+## Scenario creation
 
 ```sh
 $ mkdir scenarios
@@ -55,6 +55,7 @@ $ touch scenarios/sample_scenario.php
 
 ```php:scenarios/sample_scenario.php
 <?php
+// scenarios/sample_scenario.php
 
 declare(strict_types=1);
 
@@ -67,10 +68,37 @@ return static function (ClientInterface $cl): void {
 
 ```
 
-## Execute
+## Execution
 
-### 1. Execute using Web GUI
+### 1. Using Web GUI
 
-### 2. Execute using CLI
+TODO
+
+### 2. Using CLI
+
+```sh
+$ php heavyrain.phar run scenarios/sample_scenario.php http://localhost:8080/
+```
 
 ## Report
+
+TODO
+
+## Contributing
+
+Anytime you can contribute to this repository.
+
+```sh
+$ git clone https://github.com/heavyrain-php/heavyrain.git
+$ cd heavyrain
+$ composer install
+$ composer ci
+```
+
+## Licenses
+
+See [LICENSE](./LICENSE).
+
+## Contacts
+
+[Twitter @akai_inu](https://twitter.com/akai_inu)

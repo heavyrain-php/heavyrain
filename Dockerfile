@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
 FROM php:8.1-cli-bullseye
 
-# 環境変数設定
 ENV DEBIAN_FRONTEND=noninteractive
 ARG LANG=C.UTF-8
 ENV LANG=${LANG}
