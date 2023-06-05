@@ -61,7 +61,7 @@ class RequestBuilder implements RequestBuilderInterface
 
     /**
      * @var array|null
-     * @psalm-var array<non-empty-string, string|int|float>
+     * @psalm-var array<non-empty-string, scalar|\Stringable>
      */
     private ?array $query = null;
 
@@ -72,7 +72,7 @@ class RequestBuilder implements RequestBuilderInterface
 
     /**
      * @var array
-     * @psalm-var array<non-empty-string, non-empty-string|non-empty-string[]>
+     * @psalm-var array<non-empty-string, mixed>
      */
     private array $headers = [];
 
@@ -132,8 +132,9 @@ class RequestBuilder implements RequestBuilderInterface
         if (!\is_null($this->protocolVersion)) {
             $request = $request->withProtocolVersion($this->protocolVersion);
         }
+        /** @var mixed $value */
         foreach ($this->headers as $name => $value) {
-            $request = $request->withAddedHeader($name, $value);
+            $request = $request->withAddedHeader($name, $this->createHeaderValue($name, $value));
         }
         if (!\is_null($this->body)) {
             $request = $request->withBody($this->streamFactory->createStream($this->body));
@@ -264,13 +265,14 @@ class RequestBuilder implements RequestBuilderInterface
 
     public function headers(array $headers): self
     {
+        /** @var mixed $value */
         foreach ($headers as $name => $value) {
             $this->header($name, $value);
         }
         return $this;
     }
 
-    public function header(string $name, string|array $value): self
+    public function header(string $name, mixed $value): self
     {
         $this->headers[$name] = $value;
         return $this;
@@ -294,7 +296,7 @@ class RequestBuilder implements RequestBuilderInterface
      * Creates query string
      *
      * @param array $query
-     * @psalm-param array<string, string|int|float> $query
+     * @psalm-param array<string, scalar|\Stringable> $query
      * @return string
      */
     private function createQuery(array $query): string
@@ -307,5 +309,36 @@ class RequestBuilder implements RequestBuilderInterface
         }
 
         return \implode('&', $entries);
+    }
+
+    /**
+     * Creates header value
+     *
+     * @param string $name
+     * @param mixed $value
+     * @return string|array
+     * @psalm-return string|string[]
+     * @throws \Heavyrain\Contracts\RequestBuilderExceptionInterface emits when invalid header value
+     */
+    private function createHeaderValue(string $name, mixed $value): string|array
+    {
+        if (\is_array($value)) {
+            /** @var string[] */
+            $results = [];
+            foreach ($value as $v) {
+                if (!\is_scalar($v)) {
+                    throw new RequestbuilderException(
+                        \sprintf('%s is invalid value type=%s', $name, \gettype($v)),
+                    );
+                }
+                $results[] = \strval($v);
+            }
+            return $results;
+        } elseif (!\is_scalar($value)) {
+            throw new RequestbuilderException(
+                \sprintf('%s is invalid value type=%s', $name, \gettype($value)),
+            );
+        }
+        return \strval($value);
     }
 }

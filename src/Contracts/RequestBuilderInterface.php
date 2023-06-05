@@ -109,9 +109,9 @@ interface RequestBuilderInterface
      * Set URI query string
      *
      * @param array $query
-     * @psalm-param array<non-empty-string, int|float|string> $query
-     * @phpstan-param array<non-empty-string, int|float|string> $query
-     * @phan-param array<non-empty-string, int|float|string> $query
+     * @psalm-param array<non-empty-string, scalar|\Stringable> $query
+     * @phpstan-param array<non-empty-string, scalar|\Stringable> $query
+     * @phan-param array<non-empty-string, scalar|\Stringable> $query
      * @return self
      */
     public function query(array $query): self;
@@ -257,9 +257,9 @@ interface RequestBuilderInterface
      * Set header list
      *
      * @param array $headers
-     * @psalm-param array<non-empty-string, non-empty-string|non-empty-string[]> $headers
-     * @phpstan-param array<non-empty-string, non-empty-string|non-empty-string[]> $headers
-     * @phan-param array<non-empty-string, non-empty-string|non-empty-string[]> $headers
+     * @psalm-param array<non-empty-string, mixed> $headers
+     * @phpstan-param array<non-empty-string, mixed> $headers
+     * @phan-param array<non-empty-string, mixed> $headers
      * @return self
      */
     public function headers(array $headers): self;
@@ -271,13 +271,10 @@ interface RequestBuilderInterface
      * @psalm-param non-empty-string $name
      * @phpstan-param non-empty-string $name
      * @phan-param non-empty-string $name
-     * @param string|string[] $value
-     * @psalm-param non-empty-string|non-empty-string[] $value
-     * @phpstan-param non-empty-string|non-empty-string[] $value
-     * @phan-param non-empty-string|non-empty-string[] $value
+     * @param mixed $value
      * @return self
      */
-    public function header(string $name, string|array $value): self;
+    public function header(string $name, mixed $value): self;
 
     /**
      * Set JSON body
