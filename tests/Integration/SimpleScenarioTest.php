@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Heavyrain\Tests\Integration;
 
 use Heavyrain\Contracts\ClientInterface;
+use Heavyrain\Scenario\AssertableResponse;
 use Heavyrain\Scenario\Client;
 use Heavyrain\Scenario\RequestBuilder;
 use Heavyrain\Tests\TestCase;
@@ -20,6 +21,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Client\ClientInterface as PsrClientInterface;
 use Psr\Http\Message\ResponseInterface;
 
+#[CoversClass(AssertableResponse::class)]
 #[CoversClass(RequestBuilder::class)]
 #[CoversClass(Client::class)]
 final class SimpleScenarioTest extends TestCase
