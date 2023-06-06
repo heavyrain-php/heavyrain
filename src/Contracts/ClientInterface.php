@@ -16,6 +16,30 @@ use Psr\Http\Message\RequestInterface;
 interface ClientInterface
 {
     /**
+     * Waits seconds
+     *
+     * @param int|float $sec
+     * @return void
+     */
+    public function waitSec(int|float $sec): void;
+
+    /**
+     * Waits milli seconds
+     *
+     * @param int|float $milliSec
+     * @return void
+     */
+    public function waitMilliSec(int|float $milliSec): void;
+
+    /**
+     * Waits micro seconds
+     *
+     * @param int|float $microSec
+     * @return void
+     */
+    public function waitMicroSec(int|float $microSec): void;
+
+    /**
      * Sends request and returns AssertableResponse
      *
      * @param RequestInterface $request
@@ -34,25 +58,13 @@ interface ClientInterface
      * Shorthand request with GET
      *
      * @param string $path
+     * @param array|null $query
+     * @psalm-param array<non-empty-string, scalar> $query
+     * @phpstan-param array<non-empty-string, scalar> $query
+     * @phan-param array<non-empty-string, scalar> $query
      * @return AssertableResponseInterface
      */
-    public function get(string $path): AssertableResponseInterface;
-
-    /**
-     * Shorthand request with HEAD
-     *
-     * @param string $path
-     * @return AssertableResponseInterface
-     */
-    public function head(string $path): AssertableResponseInterface;
-
-    /**
-     * Shorthand request with OPTIONS
-     *
-     * @param string $path
-     * @return AssertableResponseInterface
-     */
-    public function options(string $path): AssertableResponseInterface;
+    public function get(string $path, ?array $query = null): AssertableResponseInterface;
 
     /**
      * Shorthand request with POST
@@ -76,18 +88,6 @@ interface ClientInterface
     public function postJson(string $path, array $body): AssertableResponseInterface;
 
     /**
-     * Shorthand request with POST form
-     *
-     * @param string $path
-     * @param array $body
-     * @psalm-param array<array-key, mixed> $body
-     * @phpstan-param array<array-key, mixed> $body
-     * @phan-param array<array-key, mixed> $body
-     * @return AssertableResponseInterface
-     */
-    public function postForm(string $path, array $body): AssertableResponseInterface;
-
-    /**
      * Shorthand request with PUT
      *
      * @param string $path
@@ -107,18 +107,6 @@ interface ClientInterface
      * @return AssertableResponseInterface
      */
     public function putJson(string $path, array $body): AssertableResponseInterface;
-
-    /**
-     * Shorthand request with PUT form
-     *
-     * @param string $path
-     * @param array $body
-     * @psalm-param array<array-key, mixed> $body
-     * @phpstan-param array<array-key, mixed> $body
-     * @phan-param array<array-key, mixed> $body
-     * @return AssertableResponseInterface
-     */
-    public function putForm(string $path, array $body): AssertableResponseInterface;
 
     /**
      * Shorthand request with DELETE
@@ -142,18 +130,6 @@ interface ClientInterface
     public function deleteJson(string $path, array $body): AssertableResponseInterface;
 
     /**
-     * Shorthand request with DELETE form
-     *
-     * @param string $path
-     * @param array $body
-     * @psalm-param array<array-key, mixed> $body
-     * @phpstan-param array<array-key, mixed> $body
-     * @phan-param array<array-key, mixed> $body
-     * @return AssertableResponseInterface
-     */
-    public function deleteForm(string $path, array $body): AssertableResponseInterface;
-
-    /**
      * Shorthand request with PATCH
      *
      * @param string $path
@@ -173,16 +149,4 @@ interface ClientInterface
      * @return AssertableResponseInterface
      */
     public function patchJson(string $path, array $body): AssertableResponseInterface;
-
-    /**
-     * Shorthand request with PATCH form
-     *
-     * @param string $path
-     * @param array $body
-     * @psalm-param array<array-key, mixed> $body
-     * @phpstan-param array<array-key, mixed> $body
-     * @phan-param array<array-key, mixed> $body
-     * @return AssertableResponseInterface
-     */
-    public function patchForm(string $path, array $body): AssertableResponseInterface;
 }

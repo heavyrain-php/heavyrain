@@ -8,62 +8,47 @@ declare(strict_types=1);
 
 namespace Heavyrain\Tests\Integration;
 
-use Buzz\Client\BuzzClientInterface;
-use Heavyrain\Scenario\HttpProfiler;
-use Heavyrain\Scenario\HttpResult;
-use Heavyrain\Scenario\Instructions\HttpRequestInstruction;
-use Heavyrain\Scenario\Instructions\WaitInstruction;
-use Heavyrain\Scenario\InstructorInterface;
-use Heavyrain\Scenario\Instructors\PsrInstructor;
-use Heavyrain\Scenario\Response;
-use Heavyrain\Support\DefaultHttpBuilder;
+use Heavyrain\Contracts\ClientInterface;
+use Heavyrain\Scenario\Client;
+use Heavyrain\Scenario\RequestBuilder;
 use Heavyrain\Tests\TestCase;
+use Laminas\Diactoros\RequestFactory;
+use Laminas\Diactoros\StreamFactory;
+use Laminas\Diactoros\UriFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
+use Psr\Http\Client\ClientInterface as PsrClientInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
 
-#[CoversClass(HttpProfiler::class)]
-#[CoversClass(PsrInstructor::class)]
-#[CoversClass(DefaultHttpBuilder::class)]
-#[CoversClass(HttpResult::class)]
-#[CoversClass(HttpRequestInstruction::class)]
-#[CoversClass(WaitInstruction::class)]
-#[CoversClass(Response::class)]
+#[CoversClass(RequestBuilder::class)]
+#[CoversClass(Client::class)]
 final class SimpleScenarioTest extends TestCase
 {
     #[Test]
     public function run_simple_scenario(): void
     {
-        /** @var \PHPUnit\Framework\MockObject\MockObject&StreamInterface $streamMock */
-        $streamMock = $this->createMock(StreamInterface::class);
-        $streamMock->expects($this->once())
-            ->method('__toString')
-            ->willReturn('');
-        /** @var \PHPUnit\Framework\MockObject\MockObject&ResponseInterface $responseMock */
-        $responseMock = $this->createMock(ResponseInterface::class);
-        $responseMock->expects($this->once())
-            ->method('getBody')
-            ->willReturn($streamMock);
-        /** @var \PHPUnit\Framework\MockObject\MockObject&BuzzClientInterface $clientMock */
-        $clientMock = $this->createMock(BuzzClientInterface::class);
-        $clientMock->expects($this->once())
-            ->method('sendRequest')
-            ->willReturn($responseMock);
-        $builder = new DefaultHttpBuilder();
-        $profiler = new HttpProfiler();
-        $inst = new PsrInstructor(
-            $builder->getUriFactory(),
-            $builder->getRequestFactory()->createRequest('GET', ''),
-            $builder->buildClient($clientMock),
-            $profiler,
+        /** @var \PHPUnit\Framework\MockObject\MockObject&PsrClientInterface */
+        $psrClient = $this->createMock(PsrClientInterface::class);
+        $builder = new RequestBuilder(
+            new UriFactory(),
+            new StreamFactory(),
+            new RequestFactory(),
+            'http://localhost',
         );
+        $response = $this->createMock(ResponseInterface::class);
 
-        $func = static function (InstructorInterface $inst): void {
-            $inst->get('/');
-            $inst->waitSec(0.0001);
+        $psrClient->expects($this->once())
+            ->method('sendRequest')
+            ->withAnyParameters()
+            ->willReturn($response);
+
+        $cl = new Client($psrClient, $builder);
+
+        $func = static function (ClientInterface $cl): void {
+            $cl->get('/');
+            $cl->waitMicroSec(1);
         };
 
-        $func($inst);
+        $func($cl);
     }
 }

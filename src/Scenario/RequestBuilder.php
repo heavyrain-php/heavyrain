@@ -61,7 +61,7 @@ class RequestBuilder implements RequestBuilderInterface
 
     /**
      * @var array|null
-     * @psalm-var array<non-empty-string, scalar|\Stringable>
+     * @psalm-var array<non-empty-string, string>
      */
     private ?array $query = null;
 
@@ -92,7 +92,10 @@ class RequestBuilder implements RequestBuilderInterface
         protected readonly RequestFactoryInterface $requestFactory,
         protected readonly string $baseUri,
     ) {
-        \assert(\str_starts_with($this->baseUri, 'http://') || \str_starts_with($this->baseUri, 'https://'), 'baseUri is http or https scheme');
+        \assert(
+            \str_starts_with($this->baseUri, 'http://') || \str_starts_with($this->baseUri, 'https://'),
+            'baseUri has http or https scheme',
+        );
     }
 
     public function createUri(): UriInterface
@@ -143,7 +146,7 @@ class RequestBuilder implements RequestBuilderInterface
         return $request;
     }
 
-    public function requestTarget(string $target): self
+    public function requestTarget(string|null $target): self
     {
         $this->requestTarget = $target;
         return $this;
@@ -182,7 +185,9 @@ class RequestBuilder implements RequestBuilderInterface
 
     public function query(array $query): self
     {
-        $this->query = $query;
+        foreach ($query as $name => $value) {
+            $this->query[$name] = \strval($value);
+        }
         return $this;
     }
 
@@ -210,11 +215,6 @@ class RequestBuilder implements RequestBuilderInterface
     public function contentTypePlain(): RequestBuilderInterface
     {
         return $this->contentType('text/plain');
-    }
-
-    public function contentTypeHtml(): RequestBuilderInterface
-    {
-        return $this->contentType('text/html');
     }
 
     public function contentTypeJson(?string $charset = 'UTF-8'): RequestBuilderInterface
@@ -289,6 +289,10 @@ class RequestBuilder implements RequestBuilderInterface
     public function body(string $body): self
     {
         $this->body = $body;
+        $this->headers([
+            'Content-Length' => \function_exists('mb_strlen') ? \mb_strlen($body) : \strlen($body),
+            'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
         return $this;
     }
 

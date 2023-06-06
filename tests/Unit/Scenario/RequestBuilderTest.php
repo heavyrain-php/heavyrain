@@ -86,13 +86,13 @@ final class RequestBuilderTest extends TestCase
             ->method('POST')
             ->requestTarget('')
             ->protocolVersion('1.0')
-            ->headers(['Content-Length' => '1'])
+            ->headers(['Some-Header' => 'YES'])
             ->json(['b' => 'c'])
             ->createRequest();
 
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame('{"b":"c"}', (string)$request->getBody());
-        self::assertSame(['Content-Length' => ['1'], 'Content-Type' => ['application/json; charset=UTF-8'], 'Accept' => ['application/json; charset=UTF-8']], $request->getHeaders());
+        self::assertSame(['Some-Header' => ['YES'], 'Content-Length' => ['9'], 'Content-Type' => ['application/json; charset=UTF-8'], 'Accept' => ['application/json; charset=UTF-8']], $request->getHeaders());
         self::assertSame('POST', $request->getMethod());
         self::assertSame('1.0', $request->getProtocolVersion());
         self::assertSame('', $request->getRequestTarget());
@@ -120,11 +120,6 @@ final class RequestBuilderTest extends TestCase
             static fn (RequestBuilder $builder): RequestBuilder => $builder->contentTypePlain(),
             'Content-Type',
             'text/plain',
-        );
-        $this->assertHeaderHas(
-            static fn (RequestBuilder $builder): RequestBuilder => $builder->contentTypeHtml(),
-            'Content-Type',
-            'text/html',
         );
         $this->assertHeaderHas(
             static fn (RequestBuilder $builder): RequestBuilder => $builder->contentTypeJson('UTF-8'),

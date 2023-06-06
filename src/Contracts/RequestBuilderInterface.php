@@ -38,20 +38,22 @@ interface RequestBuilderInterface
     /**
      * Set request target
      *
-     * @param string $target
+     * @defaults null
+     * @param string|null $target
      * @return self
      * @link https://www.php-fig.org/psr/psr-7/#14-request-targets-and-uris
      * @link https://httpwg.org/specs/rfc9112.html#request.target
      */
-    public function requestTarget(string $target): self;
+    public function requestTarget(string|null $target): self;
 
     /**
      * Set protocol version
      *
+     * @defaults '1.1'
      * @param string $version
-     * @psalm-param '0.9'|'1.0'|'1.1'|'2.0' $version
-     * @phpstan-param '0.9'|'1.0'|'1.1'|'2.0' $version
-     * @phan-param '0.9'|'1.0'|'1.1'|'2.0' $version
+     * @psalm-param '0.9'|'1.0'|'1.1'|'2' $version
+     * @phpstan-param '0.9'|'1.0'|'1.1'|'2' $version
+     * @phan-param '0.9'|'1.0'|'1.1'|'2' $version
      * @return self
      * @link https://httpwg.org/specs/rfc9112.html#http.version
      */
@@ -63,9 +65,9 @@ interface RequestBuilderInterface
      * It should be uppercase otherwise emits error when you use static analysis
      *
      * @param string $method
-     * @psalm-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE' $method
-     * @phpstan-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE' $method
-     * @phan-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE' $method
+     * @psalm-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH' $method
+     * @phpstan-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH' $method
+     * @phan-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH' $method
      * @return self
      * @link https://httpwg.org/specs/rfc9110.html#methods
      */
@@ -90,9 +92,6 @@ interface RequestBuilderInterface
      * Set URI path
      *
      * @param string $path
-     * @psalm-param non-empty-string $path
-     * @phpstan-param non-empty-string $path
-     * @phan-param non-empty-string $path
      * @return self
      */
     public function path(string $path): self;
@@ -109,9 +108,9 @@ interface RequestBuilderInterface
      * Set URI query string
      *
      * @param array $query
-     * @psalm-param array<non-empty-string, scalar|\Stringable> $query
-     * @phpstan-param array<non-empty-string, scalar|\Stringable> $query
-     * @phan-param array<non-empty-string, scalar|\Stringable> $query
+     * @psalm-param array<non-empty-string, scalar> $query
+     * @phpstan-param array<non-empty-string, scalar> $query
+     * @phan-param array<non-empty-string, scalar> $query
      * @return self
      */
     public function query(array $query): self;
@@ -169,13 +168,6 @@ interface RequestBuilderInterface
      * @return self
      */
     public function contentTypePlain(): self;
-
-    /**
-     * Set Content-Type: text/html
-     *
-     * @return self
-     */
-    public function contentTypeHtml(): self;
 
     /**
      * Set Content-Type: application/json; charset=UTF-8
