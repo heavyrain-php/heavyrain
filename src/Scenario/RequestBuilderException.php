@@ -11,6 +11,6 @@ namespace Heavyrain\Scenario;
 use Heavyrain\Contracts\RequestBuilderExceptionInterface;
 use LogicException;
 
-final class RequestbuilderException extends LogicException implements RequestBuilderExceptionInterface
+final class RequestBuilderException extends LogicException implements RequestBuilderExceptionInterface
 {
 }

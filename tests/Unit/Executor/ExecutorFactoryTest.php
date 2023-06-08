@@ -12,7 +12,7 @@ use Buzz\Client\BuzzClientInterface;
 use Heavyrain\Scenario\Client;
 use Heavyrain\Scenario\DefaultScenarioConfig;
 use Heavyrain\Scenario\HttpProfiler;
-use Heavyrain\Scenario\Instructors\PsrInstructor;
+use Heavyrain\Scenario\RequestBuilder;
 use Heavyrain\Support\DefaultHttpBuilder;
 use Heavyrain\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -23,6 +23,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(DefaultScenarioConfig::class)]
 #[UsesClass(HttpProfiler::class)]
 #[UsesClass(DefaultHttpBuilder::class)]
+#[UsesClass(RequestBuilder::class)]
 #[UsesClass(WaitSendRequestMiddleware::class)]
 #[UsesClass(Client::class)]
 #[UsesClass(SyncExecutor::class)]
@@ -30,7 +31,7 @@ final class ExecutorFactoryTest extends TestCase
 {
     public function testCreateSync(): void
     {
-        $config = new ExecutorConfig('', new DefaultScenarioConfig(), '');
+        $config = new ExecutorConfig('http://localhost', new DefaultScenarioConfig(), '');
         $profiler = new HttpProfiler();
         /** @var \PHPUnit\Framework\MockObject\MockObject&BuzzClientInterface */
         $buzzClient = $this->createMock(BuzzClientInterface::class);

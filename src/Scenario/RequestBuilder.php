@@ -98,10 +98,9 @@ class RequestBuilder implements RequestBuilderInterface
         protected readonly RequestFactoryInterface $requestFactory,
         protected readonly string $baseUri,
     ) {
-        \assert(
-            \str_starts_with($this->baseUri, 'http://') || \str_starts_with($this->baseUri, 'https://'),
-            'baseUri has http or https scheme',
-        );
+        if (!\str_starts_with($this->baseUri, 'http://') && !\str_starts_with($this->baseUri, 'https://')) {
+            throw new RequestBuilderException('baseUri must be http or https scheme');
+        }
     }
 
     public function createUri(): UriInterface
@@ -317,12 +316,15 @@ class RequestBuilder implements RequestBuilderInterface
     {
         $path = '/' . (\is_null($this->path) ? '' : \ltrim($this->path, '/'));
 
+        // Add Path-Tag header for aggregation
+        $this->header('Path-Tag', $path);
+
         if (!\is_null($this->pathArgs)) {
             // replace path args
             foreach ($this->pathArgs as $name => $value) {
                 $search = \sprintf('{%s}', $name);
                 if (!\str_contains($path, $search)) {
-                    throw new RequestbuilderException(
+                    throw new RequestBuilderException(
                         \sprintf('pathArg %s is not defined in path=%s', $search, $path),
                     );
                 }
@@ -368,7 +370,7 @@ class RequestBuilder implements RequestBuilderInterface
             $results = [];
             foreach ($value as $v) {
                 if (!\is_scalar($v)) {
-                    throw new RequestbuilderException(
+                    throw new RequestBuilderException(
                         \sprintf('%s is invalid value type=%s', $name, \gettype($v)),
                     );
                 }
@@ -376,7 +378,7 @@ class RequestBuilder implements RequestBuilderInterface
             }
             return $results;
         } elseif (!\is_scalar($value)) {
-            throw new RequestbuilderException(
+            throw new RequestBuilderException(
                 \sprintf('%s is invalid value type=%s', $name, \gettype($value)),
             );
         }

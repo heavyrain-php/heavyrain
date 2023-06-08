@@ -97,7 +97,7 @@ interface RequestBuilderInterface
     public function path(string $path): self;
 
     /**
-     * Set URI args within path
+     * Set URI args within path like /users/{userId}
      *
      * @param array $args
      * @psalm-param array<non-empty-string, scalar> $args

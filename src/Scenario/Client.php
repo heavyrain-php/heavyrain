@@ -71,7 +71,30 @@ class Client implements ClientInterface
             ->method($method)
             ->path($path);
 
-        return $this->send($builder->createRequest());
+        if (!\is_null($pathArgs)) {
+            $builder->pathArgs($pathArgs);
+        }
+        if (!\is_null($query)) {
+            $builder->query($query);
+        }
+        if (!\is_null($body) && !\is_null($json)) {
+            throw new RequestBuilderException('You can specify either body or json');
+        }
+        if (!\is_null($body)) {
+            $builder->body($body);
+        }
+        if (!\is_null($json)) {
+            $builder->json($json);
+        }
+
+        $response = $this->send($builder->createRequest());
+
+        // auto ok assertion
+        if ($assertsOk) {
+            $response->assertOk();
+        }
+
+        return $response;
     }
 
     public function get(string $path, ?array $query = null): AssertableResponseInterface
