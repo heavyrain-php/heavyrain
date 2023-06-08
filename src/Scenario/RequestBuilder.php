@@ -55,6 +55,12 @@ class RequestBuilder implements RequestBuilderInterface
     private ?string $path = null;
 
     /**
+     * @var array|null
+     * @psalm-var array<non-empty-string, scalar>|null
+     */
+    private ?array $pathArgs = null;
+
+    /**
      * @var string|null
      */
     private ?string $fragment = null;
@@ -104,10 +110,10 @@ class RequestBuilder implements RequestBuilderInterface
             return $this->uri;
         }
 
-        $uri = $this->uriFactory->createUri($this->baseUri);
+        $uri = $this->uriFactory->createUri(\rtrim($this->baseUri, '/'));
 
         if (!\is_null($this->path)) {
-            $uri = $uri->withPath($this->path);
+            $uri = $uri->withPath($this->createPath());
         }
         if (!\is_null($this->query)) {
             $uri = $uri->withQuery($this->createQuery($this->query));
@@ -174,6 +180,12 @@ class RequestBuilder implements RequestBuilderInterface
     public function path(string $path): self
     {
         $this->path = $path;
+        return $this;
+    }
+
+    public function pathArgs(array $args): self
+    {
+        $this->pathArgs = $args;
         return $this;
     }
 
@@ -294,6 +306,31 @@ class RequestBuilder implements RequestBuilderInterface
             'Content-Type' => 'text/plain; charset=UTF-8',
         ]);
         return $this;
+    }
+
+    /**
+     * Creates path with args
+     *
+     * @return string
+     */
+    private function createPath(): string
+    {
+        $path = '/' . (\is_null($this->path) ? '' : \ltrim($this->path, '/'));
+
+        if (!\is_null($this->pathArgs)) {
+            // replace path args
+            foreach ($this->pathArgs as $name => $value) {
+                $search = \sprintf('{%s}', $name);
+                if (!\str_contains($path, $search)) {
+                    throw new RequestbuilderException(
+                        \sprintf('pathArg %s is not defined in path=%s', $search, $path),
+                    );
+                }
+                $path = \str_replace($search, \strval($value), $path);
+            }
+        }
+
+        return $path;
     }
 
     /**

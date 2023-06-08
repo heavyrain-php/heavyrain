@@ -41,7 +41,7 @@ final class ExecutorFactory
         $builder = new DefaultHttpBuilder();
         $client = $builder->buildClient($buzzClient, [
             // TODO: should be configurable
-            'allow_redirects' => true,
+            'allow_redirects' => false,
             // must be true for profiling
             'expose_curl_info' => true,
             'verify' => $this->config->sslVerify,

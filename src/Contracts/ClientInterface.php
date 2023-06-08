@@ -55,6 +55,37 @@ interface ClientInterface
     public function with(): RequestBuilderInterface;
 
     /**
+     * Requests with detail options using array shape
+     *
+     * @param string $method
+     * @psalm-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH' $method
+     * @phpstan-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH' $method
+     * @phan-param 'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH' $method
+     * @param string $path
+     * @param array|null $pathArgs
+     * @psalm-param array<non-empty-string, scalar>|null $pathArgs
+     * @phpstan-param array<non-empty-string, scalar>|null $pathArgs
+     * @phan-param array<non-empty-string, scalar>|null $pathArgs
+     * @param array|null $query
+     * @psalm-param array<non-empty-string, scalar>|null $query
+     * @phpstan-param array<non-empty-string, scalar>|null $query
+     * @phan-param array<non-empty-string, scalar>|null $query
+     * @param string|null $body
+     * @param array|null $json
+     * @param bool $assertsOk
+     * @return AssertableResponseInterface
+     */
+    public function requestWithOptions(
+        string $method,
+        string $path,
+        ?array $pathArgs = null,
+        ?array $query = null,
+        ?string $body = null,
+        ?array $json = null,
+        bool $assertsOk = true,
+    ): AssertableResponseInterface;
+
+    /**
      * Shorthand request with GET
      *
      * @param string $path
@@ -65,6 +96,18 @@ interface ClientInterface
      * @return AssertableResponseInterface
      */
     public function get(string $path, ?array $query = null): AssertableResponseInterface;
+
+    /**
+     * Shorthand request with GET JSON
+     *
+     * @param string $path
+     * @param array|null $query
+     * @psalm-param array<non-empty-string, scalar> $query
+     * @phpstan-param array<non-empty-string, scalar> $query
+     * @phan-param array<non-empty-string, scalar> $query
+     * @return AssertableResponseInterface
+     */
+    public function getJson(string $path, ?array $query = null): AssertableResponseInterface;
 
     /**
      * Shorthand request with POST

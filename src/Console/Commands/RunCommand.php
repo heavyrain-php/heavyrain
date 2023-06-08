@@ -194,8 +194,9 @@ final class RunCommand extends Command implements SignalableCommandInterface
         return [\SIGINT, \SIGTERM];
     }
 
-    public function handleSignal(int $signal): void
+    public function handleSignal(int $signal)
     {
         $this->cancelToken?->cancel();
+        return false;
     }
 }

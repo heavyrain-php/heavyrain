@@ -58,10 +58,40 @@ class Client implements ClientInterface
         return clone $this->baseBuilder;
     }
 
+    public function requestWithOptions(
+        string $method,
+        string $path,
+        ?array $pathArgs = null,
+        ?array $query = null,
+        ?string $body = null,
+        ?array $json = null,
+        bool $assertsOk = true,
+    ): AssertableResponseInterface {
+        $builder = $this->with()
+            ->method($method)
+            ->path($path);
+
+        return $this->send($builder->createRequest());
+    }
+
     public function get(string $path, ?array $query = null): AssertableResponseInterface
     {
         $builder = $this->with()
             ->method('GET')
+            ->path($path);
+
+        if (!\is_null($query)) {
+            $builder->query($query);
+        }
+
+        return $this->send($builder->createRequest());
+    }
+
+    public function getJson(string $path, ?array $query = null): AssertableResponseInterface
+    {
+        $builder = $this->with()
+            ->method('GET')
+            ->acceptJson()
             ->path($path);
 
         if (!\is_null($query)) {

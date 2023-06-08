@@ -97,6 +97,17 @@ interface RequestBuilderInterface
     public function path(string $path): self;
 
     /**
+     * Set URI args within path
+     *
+     * @param array $args
+     * @psalm-param array<non-empty-string, scalar> $args
+     * @phpstan-param array<non-empty-string, scalar> $args
+     * @phan-param array<non-empty-string, scalar> $args
+     * @return self
+     */
+    public function pathArgs(array $args): self;
+
+    /**
      * Set URI fragment
      *
      * @param string $fragment
