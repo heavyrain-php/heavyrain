@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Heavyrain\Scenario;
+namespace Heavyrain\Contracts;
 
 /**
  * Scenario executor
@@ -17,8 +17,8 @@ interface ExecutorInterface
      * Executes scenario
      * It must not throw Exception
      *
-     * @param CancellationToken $token
+     * @param CancellationTokenInterface $token
      * @return void
      */
-    public function execute(CancellationToken $token): void;
+    public function execute(CancellationTokenInterface $token): void;
 }

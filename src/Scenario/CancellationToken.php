@@ -8,7 +8,9 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario;
 
-final class CancellationToken
+use Heavyrain\Contracts\CancellationTokenInterface;
+
+final class CancellationToken implements CancellationTokenInterface
 {
     private bool $isCancelled = false;
 

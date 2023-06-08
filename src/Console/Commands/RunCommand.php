@@ -92,7 +92,7 @@ final class RunCommand extends Command implements SignalableCommandInterface
         $waitAfterScenarioSec = \floatval($input->getOption('wait-after-scenario'));
         $waitAfterSendRequestSec = \floatval($input->getOption('wait-after-request'));
 
-        /** @var string $scenarioFileName */
+        /** @var string */
         $scenarioFileName = $input->getArgument('scenario-php-file');
         $scenarioFilePath = \sprintf('%s/%s', $cwd, $scenarioFileName);
 
@@ -171,9 +171,17 @@ final class RunCommand extends Command implements SignalableCommandInterface
         $io->writeln(\sprintf('Start execution at %s', \date('Y-m-d H:i:s')));
 
         // TODO: Select executor
-        (new ExecutorFactory($config, $scenarioFunction->getClosure(), $profiler))->createSync()->execute($this->cancelToken);
+        (new ExecutorFactory($config, $scenarioFunction->getClosure(), $profiler))
+            ->createSync()
+            ->execute($this->cancelToken);
 
-        $io->writeln(\sprintf('End execution   at %s (%f seconds)', \date('Y-m-d H:i:s'), \microtime(true) - $startMicrosec));
+        $io->writeln(
+            \sprintf(
+                'End execution   at %s (%f seconds)',
+                \date('Y-m-d H:i:s'),
+                \microtime(true) - $startMicrosec,
+            ),
+        );
 
         // TODO: Select reporter
         (new TableReporter($io))->report($profiler);

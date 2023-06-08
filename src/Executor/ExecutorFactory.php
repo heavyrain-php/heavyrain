@@ -10,12 +10,12 @@ namespace Heavyrain\Executor;
 
 use Buzz\Client\BuzzClientInterface;
 use Closure;
-use Heavyrain\Scenario\ExecutorInterface;
+use Heavyrain\Contracts\ClientInterface;
+use Heavyrain\Contracts\ExecutorInterface;
+use Heavyrain\Scenario\Client;
 use Heavyrain\Scenario\HttpProfiler;
-use Heavyrain\Scenario\InstructorInterface;
-use Heavyrain\Scenario\Instructors\PsrInstructor;
+use Heavyrain\Scenario\RequestBuilder;
 use Heavyrain\Support\DefaultHttpBuilder;
-use Psr\Http\Message\RequestInterface;
 
 final class ExecutorFactory
 {
@@ -32,11 +32,11 @@ final class ExecutorFactory
             $this->config,
             $this->scenarioFunction,
             $this->profiler,
-            $this->createInstructor($buzzClient),
+            $this->createClient($buzzClient),
         );
     }
 
-    private function createInstructor(?BuzzClientInterface $buzzClient = null): InstructorInterface
+    private function createClient(?BuzzClientInterface $buzzClient = null): ClientInterface
     {
         $builder = new DefaultHttpBuilder();
         $client = $builder->buildClient($buzzClient, [
@@ -49,35 +49,14 @@ final class ExecutorFactory
         ]);
         $client->addMiddleware(new WaitSendRequestMiddleware($this->config->waitAfterSendRequestSec));
 
-        return new PsrInstructor(
-            $builder->getUriFactory(),
-            $this->createDefaultRequest($builder),
+        return new Client(
             $client,
-            $this->profiler,
-        );
-    }
-
-    private function createDefaultRequest(DefaultHttpBuilder $builder): RequestInterface
-    {
-        $request = $this
-            ->config
-            ->scenarioConfig
-            ->getDefaultRequest(
+            new RequestBuilder(
+                $builder->getUriFactory(),
+                $builder->getStreamFactory(),
                 $builder->getRequestFactory(),
                 $this->config->baseUri,
-            );
-
-        if (!$request->hasHeader('Accept')) {
-            $request = $request->withHeader('Accept', '*/*');
-        }
-        $request = $request->withHeader(
-            'User-Agent',
-            \sprintf(
-                '%s %s',
-                $this->config->userAgentBase,
-                $this->config->scenarioConfig->getScenarioName(),
             ),
         );
-        return $request;
     }
 }

@@ -9,10 +9,10 @@ declare(strict_types=1);
 namespace Heavyrain\Executor;
 
 use Closure;
-use Heavyrain\Scenario\CancellationToken;
-use Heavyrain\Scenario\ExecutorInterface;
+use Heavyrain\Contracts\CancellationTokenInterface;
+use Heavyrain\Contracts\ClientInterface;
+use Heavyrain\Contracts\ExecutorInterface;
 use Heavyrain\Scenario\HttpProfiler;
-use Heavyrain\Scenario\InstructorInterface;
 use Throwable;
 
 /**
@@ -24,11 +24,11 @@ class SyncExecutor implements ExecutorInterface
         private readonly ExecutorConfig $config,
         private readonly Closure $scenarioFunction,
         private readonly HttpProfiler $profiler,
-        private readonly InstructorInterface $inst,
+        private readonly ClientInterface $cl,
     ) {
     }
 
-    public function execute(CancellationToken $token): void
+    public function execute(CancellationTokenInterface $token): void
     {
         while (true) {
             if ($token->isCancelled()) {
@@ -36,7 +36,7 @@ class SyncExecutor implements ExecutorInterface
             }
 
             try {
-                ($this->scenarioFunction)($this->inst);
+                ($this->scenarioFunction)($this->cl);
             } catch (Throwable $e) {
                 $this->profiler->profileException($e);
             }

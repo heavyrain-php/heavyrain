@@ -9,21 +9,23 @@ declare(strict_types=1);
 namespace Heavyrain\Executor;
 
 use Buzz\Client\BuzzClientInterface;
+use Heavyrain\Scenario\Client;
 use Heavyrain\Scenario\DefaultScenarioConfig;
 use Heavyrain\Scenario\HttpProfiler;
 use Heavyrain\Scenario\Instructors\PsrInstructor;
 use Heavyrain\Support\DefaultHttpBuilder;
 use Heavyrain\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
-use ReflectionFunction;
+use PHPUnit\Framework\Attributes\UsesClass;
 
 #[CoversClass(ExecutorFactory::class)]
-#[CoversClass(ExecutorConfig::class)]
-#[CoversClass(DefaultScenarioConfig::class)]
-#[CoversClass(HttpProfiler::class)]
-#[CoversClass(DefaultHttpBuilder::class)]
-#[CoversClass(PsrInstructor::class)]
-#[CoversClass(SyncExecutor::class)]
+#[UsesClass(ExecutorConfig::class)]
+#[UsesClass(DefaultScenarioConfig::class)]
+#[UsesClass(HttpProfiler::class)]
+#[UsesClass(DefaultHttpBuilder::class)]
+#[UsesClass(WaitSendRequestMiddleware::class)]
+#[UsesClass(Client::class)]
+#[UsesClass(SyncExecutor::class)]
 final class ExecutorFactoryTest extends TestCase
 {
     public function testCreateSync(): void
