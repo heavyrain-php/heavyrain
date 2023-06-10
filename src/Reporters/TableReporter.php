@@ -24,9 +24,6 @@ class TableReporter
         $table = $this->io->createTable();
         $rows = [];
         foreach ($profiler->getResults() as $profile) {
-            if (!$profile->isSucceeded()) {
-                continue;
-            }
             $rows[] = [
                 $profile->request['method'],
                 $profile->request['path'],

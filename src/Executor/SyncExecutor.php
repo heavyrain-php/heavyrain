@@ -44,6 +44,8 @@ class SyncExecutor implements ExecutorInterface
             /** @var int<0, max> */
             $usec = \intval(\round(\abs($this->config->waitAfterScenarioSec) * 1_000_000));
             \usleep($usec);
+
+            return;
         }
     }
 }

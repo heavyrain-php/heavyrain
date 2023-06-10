@@ -66,12 +66,6 @@ final class HttpResult implements JsonSerializable, Stringable
      */
     public readonly ?array $curlInfo;
 
-    /** @var bool True if assertion has completed */
-    private bool $assertionCompleted = false;
-
-    /** @var bool True if assertion has succeeded */
-    private bool $assertionSucceeded = false;
-
     public function __construct(
         public readonly float $startMicrotime,
         public readonly float $endMicrotime,
@@ -83,17 +77,6 @@ final class HttpResult implements JsonSerializable, Stringable
         $this->response = self::createResponseToArray($response);
         $this->exception = self::createExceptionToArray($exception);
         $this->curlInfo = self::convertCurlInfo($response);
-    }
-
-    public function completeAssertion(bool $succeeded = true): void
-    {
-        $this->assertionCompleted = true;
-        $this->assertionSucceeded = $succeeded;
-    }
-
-    public function isSucceeded(): bool
-    {
-        return $this->assertionCompleted && $this->assertionSucceeded;
     }
 
     public function getException(): ?array
@@ -214,8 +197,6 @@ final class HttpResult implements JsonSerializable, Stringable
             'response' => $this->response,
             'exception' => $this->exception,
             'curlInfo' => $this->curlInfo,
-            'assertionCompleted' => $this->assertionCompleted,
-            'assertionSucceeded' => $this->assertionSucceeded,
         ];
     }
 
@@ -225,10 +206,6 @@ final class HttpResult implements JsonSerializable, Stringable
 
         if (!\is_null($this->exception)) {
             return \sprintf('%s: Exception: %s %s', $prefix, $this->exception['name'], $this->exception['message']);
-        } elseif (!$this->assertionCompleted) {
-            return \sprintf('%s: Warning: Assertion not completed', $prefix);
-        } elseif (!$this->assertionSucceeded) {
-            return \sprintf('%s: Warning: Assertion failed', $prefix);
         }
         \assert(!\is_null($this->response));
         return \sprintf(

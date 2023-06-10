@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Heavyrain\Executor;
+namespace Heavyrain\Executor\Middlewares;
 
 use Heavyrain\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
