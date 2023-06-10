@@ -15,13 +15,10 @@ use Throwable;
 
 /**
  * HTTPResult profiler
- * TODO: Aggregation by unixtime
- * TODO: Aggregation by path(or Path-Tag request header)
- * TODO: Aggregation by moving average method
  */
 final class HttpProfiler implements HttpProfilerInterface
 {
-    /** @var HttpResult[] */
+    /** @var array<string, HttpResult[]> */
     private array $results;
 
     /** @var Throwable[] */
@@ -60,7 +57,12 @@ final class HttpProfiler implements HttpProfilerInterface
             $request,
             $response,
         );
-        $this->results[] = $result;
+        $method = $request->getMethod();
+        $path = $method . '-' . ($request->hasHeader('Path-Tag') ? $request->getHeaderLine('Path-Tag') : $request->getUri()->getPath());
+        if (!\array_key_exists($path, $this->results)) {
+            $this->results[$path] = [];
+        }
+        $this->results[$path][] = $result;
         return $result;
     }
 }

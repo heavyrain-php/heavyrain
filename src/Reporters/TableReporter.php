@@ -25,12 +25,14 @@ class TableReporter implements ReporterInterface
     public function report(HttpProfilerInterface $profiler): void
     {
         $table = $this->io->createTable();
-        $rows = \array_map(
-            fn (HttpResultInterface $result): array => $this->getProfileRow($result),
-            $profiler->getResults(),
-        );
+        $rows = [];
+        foreach ($profiler->getResults() as $path => $results) {
+            $pathInfo = \explode('-', $path, 2);
+            \assert(\count($pathInfo) === 2);
+            $rows[] = [...$pathInfo, ...$this->getProfileRow($results)];
+        }
         $table
-            ->setHeaders(['Method', 'Path', 'Total(ms)'])
+            ->setHeaders(['Method', 'Path', 'Count', 'Min', 'Max', 'Median', 'Average'])
             ->addRows($rows)
             ->render();
 
@@ -48,15 +50,31 @@ class TableReporter implements ReporterInterface
         }
     }
 
-    private function getProfileRow(HttpResultInterface $result): array
+    private function getProfileRow(array $results): array
     {
-        $request = $result->getRequest();
-        $curlInfo = $result->getCurlInfo();
+        $totalTimeList = array_map(
+            function (HttpResultInterface $result): float {
+                $curlInfo = $result->getCurlInfo();
+                if (\is_null($curlInfo)) {
+                    return 0.0;
+                }
+                return \round(\intval($curlInfo['total_time_us']) / 10) / 100;
+            },
+            $results,
+        );
+
+        if (\count($totalTimeList) === 0) {
+            return [0, 0.0, 0.0, 0.0, 0.0];
+        }
+
+        \sort($totalTimeList, \SORT_NUMERIC | \SORT_ASC);
 
         return [
-            $request['method'],
-            $request['path'],
-            \is_null($curlInfo) ? 0 : \round(\intval($curlInfo['total_time_us']) / 10) / 100,
+            \count($totalTimeList),
+            $totalTimeList[0],
+            $totalTimeList[\count($totalTimeList) - 1],
+            $totalTimeList[\count($totalTimeList) / 2],
+            \array_sum($totalTimeList) / \count($totalTimeList),
         ];
     }
 

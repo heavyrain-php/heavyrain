@@ -20,7 +20,10 @@ interface HttpProfilerInterface
     /**
      * Returns results
      *
-     * @return HttpResultInterface[]
+     * @return array
+     * @psalm-return array<string, HttpResultInterface[]>
+     * @phpstan-return array<string, HttpResultInterface[]>
+     * @phan-return array<string, HttpResultInterface[]>
      */
     public function getResults(): array;
 
