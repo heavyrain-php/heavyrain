@@ -8,17 +8,16 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario;
 
-use JsonSerializable;
+use Heavyrain\Contracts\HttpResultInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Stringable;
 use Throwable;
 
 /**
  * Serializable HTTP result
  * data is stored as array to reduce memory comsumption
  */
-final class HttpResult implements JsonSerializable, Stringable
+final class HttpResult implements HttpResultInterface
 {
     private const CURL_INFO_HEADER = '__curl_info';
 
@@ -57,7 +56,7 @@ final class HttpResult implements JsonSerializable, Stringable
      *   previousMessage: ?string
      * }
      */
-    private ?array $exception;
+    public readonly ?array $exception;
 
     /**
      * Curl result information
@@ -79,14 +78,52 @@ final class HttpResult implements JsonSerializable, Stringable
         $this->curlInfo = self::convertCurlInfo($response);
     }
 
+    public function getRequest(): array
+    {
+        return $this->request;
+    }
+
+    public function getResponse(): ?array
+    {
+        return $this->response;
+    }
+
     public function getException(): ?array
     {
         return $this->exception;
     }
 
-    public function setException(Throwable $exception): void
+    public function getCurlInfo(): ?array
     {
-        $this->exception = self::createExceptionToArray($exception);
+        return $this->curlInfo;
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'startMicrotime' => $this->startMicrotime,
+            'endMicrotime' => $this->endMicrotime,
+            'request' => $this->request,
+            'response' => $this->response,
+            'exception' => $this->exception,
+            'curlInfo' => $this->curlInfo,
+        ];
+    }
+
+    public function __toString(): string
+    {
+        $prefix = \sprintf('%s %s', $this->request['method'], $this->request['path']);
+
+        if (!\is_null($this->exception)) {
+            return \sprintf('%s: Exception: %s %s', $prefix, $this->exception['name'], $this->exception['message']);
+        }
+        \assert(!\is_null($this->response));
+        return \sprintf(
+            '%s: Succeded: %s %s',
+            $prefix,
+            $this->response['statusCode'],
+            $this->response['reasonPhrase'],
+        );
     }
 
     /**
@@ -186,33 +223,5 @@ final class HttpResult implements JsonSerializable, Stringable
         \assert(\is_array($info));
 
         return $info;
-    }
-
-    public function jsonSerialize(): mixed
-    {
-        return [
-            'startMicrotime' => $this->startMicrotime,
-            'endMicrotime' => $this->endMicrotime,
-            'request' => $this->request,
-            'response' => $this->response,
-            'exception' => $this->exception,
-            'curlInfo' => $this->curlInfo,
-        ];
-    }
-
-    public function __toString(): string
-    {
-        $prefix = \sprintf('%s %s', $this->request['method'], $this->request['path']);
-
-        if (!\is_null($this->exception)) {
-            return \sprintf('%s: Exception: %s %s', $prefix, $this->exception['name'], $this->exception['message']);
-        }
-        \assert(!\is_null($this->response));
-        return \sprintf(
-            '%s: Succeded: %s %s',
-            $prefix,
-            $this->response['statusCode'],
-            $this->response['reasonPhrase'],
-        );
     }
 }

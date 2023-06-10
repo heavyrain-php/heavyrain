@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario;
 
+use Heavyrain\Contracts\HttpProfilerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
@@ -18,7 +19,7 @@ use Throwable;
  * TODO: Aggregation by path(or Path-Tag request header)
  * TODO: Aggregation by moving average method
  */
-final class HttpProfiler
+final class HttpProfiler implements HttpProfilerInterface
 {
     /** @var HttpResult[] */
     private array $results;
@@ -32,46 +33,21 @@ final class HttpProfiler
         $this->exceptions = [];
     }
 
-    /**
-     * Get HttpResults
-     *
-     * @return HttpResult[]
-     */
     public function getResults(): array
     {
         return [...$this->results];
     }
 
-    /**
-     * Get Exceptions
-     *
-     * @return Throwable[]
-     */
     public function getExceptions(): array
     {
         return [...$this->exceptions];
     }
 
-    /**
-     * Profile Exception
-     *
-     * @param Throwable $exception
-     * @return void
-     */
     public function profileException(Throwable $exception): void
     {
         $this->exceptions[] = $exception;
     }
 
-    /**
-     * Profile HttpResult
-     *
-     * @param float $startMicrotime
-     * @param float $endMicrotime
-     * @param RequestInterface $request
-     * @param ResponseInterface $response
-     * @return HttpResult
-     */
     public function profile(
         float $startMicrotime,
         float $endMicrotime,
