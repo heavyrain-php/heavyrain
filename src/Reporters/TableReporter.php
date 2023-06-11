@@ -91,7 +91,7 @@ class TableReporter implements ReporterInterface
         if ($exception instanceof ResponseAssertionException) {
             return [
                 'ResponseAssertionException',
-                $exception->getResponse()->getHeaderLine('Host'),
+                $exception->getRequest()->getUri()->__toString(),
                 $exception->getMessage(),
                 $exception->getResponse()->getBody()->__toString(),
             ];
