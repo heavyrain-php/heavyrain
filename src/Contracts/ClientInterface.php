@@ -16,6 +16,14 @@ use Psr\Http\Message\RequestInterface;
 interface ClientInterface
 {
     /**
+     * Adds middleware
+     *
+     * @param MiddlewareInterface $middleware
+     * @return void
+     */
+    public function addMiddleware(MiddlewareInterface $middleware): void;
+
+    /**
      * Waits seconds
      *
      * @param int|float $sec

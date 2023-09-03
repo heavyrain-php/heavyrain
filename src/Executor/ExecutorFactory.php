@@ -8,17 +8,10 @@ declare(strict_types=1);
 
 namespace Heavyrain\Executor;
 
-use Buzz\Client\BuzzClientInterface;
 use Closure;
 use Heavyrain\Contracts\ClientInterface;
 use Heavyrain\Contracts\ExecutorInterface;
-use Heavyrain\Executor\Middlewares\IdentifyRequestMiddleware;
-use Heavyrain\Executor\Middlewares\ProfilingMiddleware;
-use Heavyrain\Executor\Middlewares\WaitSendRequestMiddleware;
-use Heavyrain\Scenario\Client;
 use Heavyrain\Scenario\HttpProfiler;
-use Heavyrain\Scenario\RequestBuilder;
-use Heavyrain\Support\DefaultHttpBuilder;
 
 final class ExecutorFactory
 {
@@ -26,44 +19,17 @@ final class ExecutorFactory
         private readonly ExecutorConfig $config,
         private readonly Closure $scenarioFunction,
         private readonly HttpProfiler $profiler,
+        private readonly ClientInterface $client,
     ) {
     }
 
-    public function createSync(?BuzzClientInterface $buzzClient = null): ExecutorInterface
+    public function createSync(): ExecutorInterface
     {
         return new SyncExecutor(
             $this->config,
             $this->scenarioFunction,
             $this->profiler,
-            $this->createClient($buzzClient),
-        );
-    }
-
-    private function createClient(?BuzzClientInterface $buzzClient = null): ClientInterface
-    {
-        $builder = new DefaultHttpBuilder();
-        $client = $builder->buildClient($buzzClient, [
-            // TODO: should be configurable
-            'allow_redirects' => false,
-            // must be true for profiling
-            'expose_curl_info' => true,
-            'verify' => $this->config->sslVerify,
-            'timeout' => $this->config->timeout,
-        ]);
-        // TODO: implement uniqid every client
-        $clientId = \uniqid();
-        $client->addMiddleware(new IdentifyRequestMiddleware($clientId));
-        $client->addMiddleware(new ProfilingMiddleware($this->profiler));
-        $client->addMiddleware(new WaitSendRequestMiddleware($this->config->waitAfterSendRequestSec));
-
-        return new Client(
-            $client,
-            new RequestBuilder(
-                $builder->getUriFactory(),
-                $builder->getStreamFactory(),
-                $builder->getRequestFactory(),
-                $this->config->baseUri,
-            ),
+            $this->client,
         );
     }
 }
