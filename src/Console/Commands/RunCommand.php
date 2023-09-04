@@ -121,7 +121,6 @@ final class RunCommand extends Command implements SignalableCommandInterface
         );
         $config = new ExecutorConfig(
             $baseUri,
-            $scenarioConfig,
             $userAgentBase,
             $waitAfterScenarioSec,
             $waitAfterSendRequestSec,
@@ -134,7 +133,6 @@ final class RunCommand extends Command implements SignalableCommandInterface
         $io->definitionList(
             ['Base URI' => $baseUri],
             ['Scenario' => $scenarioFilePath],
-            ['Scenario config' => $scenarioConfigFilePath ?? 'DefaultScenarioConfig'],
             ['SSL/TLS verify' => $verifyCert ? 'yes' : 'no (default)'],
         );
 
