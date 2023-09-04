@@ -20,7 +20,7 @@ final class MiddlewareQueueTest extends TestCase
     #[Test]
     public function testEmptyMiddlewares(): void
     {
-        $lastHandler = static fn (RequestInterface $request): ResponseInterface =>
+        $lastHandler = fn (RequestInterface $request): ResponseInterface =>
             $this->createStub(ResponseInterface::class);
 
         $queue = new MiddlewareQueue([], $lastHandler);
@@ -33,6 +33,28 @@ final class MiddlewareQueueTest extends TestCase
     #[Test]
     public function testSomeMiddlewares(): void
     {
-        self::markTestIncomplete('TODO');
+        $count = 0;
+        $middleware1 = function (RequestInterface $request, callable $next) use (&$count): ResponseInterface {
+            self::assertSame(0, $count++);
+            $response = $next($request);
+            self::assertSame(3, $count++);
+            return $response;
+        };
+
+        $middleware2 = function (RequestInterface $request, callable $next) use (&$count): ResponseInterface {
+            self::assertSame(1, $count++);
+            $response = $next($request);
+            self::assertSame(2, $count++);
+            return $response;
+        };
+
+        $lastHandler = fn (RequestInterface $request): ResponseInterface =>
+            $this->createStub(ResponseInterface::class);
+
+        $queue = new MiddlewareQueue([$middleware1, $middleware2], $lastHandler);
+
+        $actual = $queue->handle($this->createStub(RequestInterface::class));
+
+        self::assertInstanceOf(ResponseInterface::class, $actual);
     }
 }

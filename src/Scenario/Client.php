@@ -10,19 +10,25 @@ namespace Heavyrain\Scenario;
 
 use Heavyrain\Contracts\AssertableResponseInterface;
 use Heavyrain\Contracts\ClientInterface;
+use Heavyrain\Contracts\HttpClientInterface;
+use Heavyrain\Contracts\MiddlewareInterface;
 use Heavyrain\Contracts\RequestBuilderInterface;
-use Psr\Http\Client\ClientInterface as PsrClientInterface;
 use Psr\Http\Message\RequestInterface;
 
 /**
  * Main client implementation with short-hand methods
  */
-class Client implements ClientInterface
+final class Client implements ClientInterface
 {
     public function __construct(
-        protected readonly PsrClientInterface $client,
+        protected readonly HttpClientInterface $client,
         protected readonly RequestBuilderInterface $baseBuilder,
     ) {
+    }
+
+    public function addMiddleware(MiddlewareInterface $middleware): void
+    {
+        $this->client->addMiddleware($middleware);
     }
 
     public function waitSec(int|float $sec): void

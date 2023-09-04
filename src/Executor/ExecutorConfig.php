@@ -8,14 +8,12 @@ declare(strict_types=1);
 
 namespace Heavyrain\Executor;
 
-use Heavyrain\Scenario\ScenarioConfigInterface;
 use LogicException;
 
 final class ExecutorConfig
 {
     /**
      * @param string $baseUri
-     * @param ScenarioConfigInterface $scenarioConfig
      * @param string $userAgentBase
      * @param int|float $waitAfterScenarioSec
      * @param int|float $waitAfterSendRequestSec
@@ -24,7 +22,6 @@ final class ExecutorConfig
      */
     public function __construct(
         public readonly string $baseUri,
-        public readonly ScenarioConfigInterface $scenarioConfig,
         public readonly string $userAgentBase,
         public readonly int|float $waitAfterScenarioSec = 1.0,
         public readonly int|float $waitAfterSendRequestSec = 1.0,

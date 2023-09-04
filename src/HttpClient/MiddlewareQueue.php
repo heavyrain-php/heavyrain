@@ -8,20 +8,26 @@ declare(strict_types=1);
 
 namespace Heavyrain\HttpClient;
 
-use Heavyrain\Contracts\MiddlewareInterface;
+use Closure;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * Middleware queue
+ */
 final class MiddlewareQueue
 {
     /**
-     * @param MiddlewareInterface[] $middlewares
-     * @param callable $lastHandler
-     * @psalm-param callable(RequestInterface $request): ResponseInterface $lastHandler
+     * @param Closure[] $middlewares
+     * @psalm-param list<Closure(RequestInterface $request, callable $next): ResponseInterface> $middlewares
+     * @phpstan-param list<Closure(RequestInterface $request, callable $next): ResponseInterface> $middlewares
+     * @phan-param list<Closure(RequestInterface $request, callable $next): ResponseInterface> $middlewares
+     * @param Closure $lastHandler
+     * @psalm-param Closure(RequestInterface $request): ResponseInterface $lastHandler
      */
     public function __construct(
         private readonly array $middlewares,
-        private readonly callable $lastHandler,
+        private readonly Closure $lastHandler,
     ) {
     }
 

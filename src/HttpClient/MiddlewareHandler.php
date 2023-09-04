@@ -8,35 +8,35 @@ declare(strict_types=1);
 
 namespace Heavyrain\HttpClient;
 
-use Heavyrain\Contracts\MiddlewareInterface;
+use Closure;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
+ * Middleware handler
  */
 final class MiddlewareHandler
 {
     /**
-     * @param MiddlewareHandler|callable(RequestInterface $request): ResponseInterface $handler
-     * @param null|MiddlewareInterface|callable(RequestInterface $request, callable $next): ResponseInterface $middleware
+     * @param MiddlewareHandler|Closure(RequestInterface $request): ResponseInterface $handler
+     * @param null|Closure(RequestInterface $request, callable $next): ResponseInterface $middleware
      */
     public function __construct(
-        private readonly MiddlewareHandler|callable $handler,
-        private readonly null|MiddlewareInterface|callable $middleware = null,
+        private readonly MiddlewareHandler|Closure $handler,
+        private readonly ?Closure $middleware = null,
     ) {
     }
 
     public function handle(RequestInterface $request): ResponseInterface
     {
+        // first class callable
+        $handler = ($this->handler)(...);
+
         if (\is_null($this->middleware)) {
-            return ($this->handler)($request);
+            return $handler($request);
         }
 
-        if (\is_callable($this->middleware)) {
-            return ($this->middleware)($request, $this->handler);
-        }
-
-        return $this->middleware->process($request, $this->handler);
+        return ($this->middleware)($request, $handler);
     }
 
     public function __invoke(RequestInterface $request): ResponseInterface

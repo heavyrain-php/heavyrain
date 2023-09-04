@@ -11,6 +11,7 @@ namespace Heavyrain\HttpClient;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\Request;
 use Amp\Http\Client\Response;
+use Closure;
 use Heavyrain\Contracts\HttpClientInterface;
 use Heavyrain\Contracts\MiddlewareInterface;
 use Psr\Http\Message\RequestInterface;
@@ -23,7 +24,7 @@ use Psr\Http\Message\ResponseInterface;
  */
 final class AmphpClient implements HttpClientInterface
 {
-    /** @var MiddlewareInterface[] $middlewares */
+    /** @var Closure[] $middlewares */
     private array $middlewares = [];
 
     public function __construct(
@@ -34,7 +35,7 @@ final class AmphpClient implements HttpClientInterface
 
     public function addMiddleware(MiddlewareInterface $middleware): void
     {
-        $this->middlewares[] = $middleware;
+        $this->middlewares[] = $middleware->process(...);
     }
 
     public function sendRequest(RequestInterface $request): ResponseInterface

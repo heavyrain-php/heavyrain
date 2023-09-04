@@ -11,6 +11,7 @@ namespace Heavyrain\Console\Commands;
 use Closure;
 use Heavyrain\Executor\ExecutorConfig;
 use Heavyrain\Executor\ExecutorFactory;
+use Heavyrain\HttpClient\ClientFactory;
 use Heavyrain\Reporters\TableReporter;
 use Heavyrain\Scenario\CancellationToken;
 use Heavyrain\Scenario\DefaultScenarioConfig;
@@ -113,36 +114,6 @@ final class RunCommand extends Command implements SignalableCommandInterface
             $io->warning('Scenario Closure should be static: `return static function(...`');
         }
 
-        /** @var ScenarioConfigInterface */
-        $scenarioConfig = new DefaultScenarioConfig();
-        /** @var ?string $scenarioConfigFileName */
-        $scenarioConfigFileName = $input->getOption('config');
-        if (!\is_null($scenarioConfigFileName)) {
-            $scenarioConfigFilePath = \sprintf('%s/%s', $cwd, $scenarioConfigFileName);
-            if (!\str_ends_with($scenarioConfigFilePath, '.php') || !\file_exists($scenarioConfigFilePath)) {
-                $io->error(\sprintf('%s file not found', $scenarioConfigFilePath));
-                return Command::INVALID;
-            }
-            assert(\file_exists($scenarioConfigFilePath)); // for psalm
-
-            /** @var mixed */
-            $scenarioConfigFunc = require $scenarioConfigFilePath;
-            if (!$scenarioConfigFunc instanceof Closure) {
-                $io->error('config must return Closure');
-                return Command::INVALID;
-            }
-            $scenarioConfigReflection = new ReflectionFunction($scenarioConfigFunc);
-            if (\method_exists($scenarioConfigReflection, 'isStatic') && !$scenarioConfigReflection->isStatic()) {
-                $io->warning('Config Closure should be static: `return static function(...`');
-            }
-            /** @var mixed */
-            $scenarioConfig = $scenarioConfigReflection->invoke();
-            if (!$scenarioConfig instanceof ScenarioConfigInterface) {
-                $io->error('Config Closure must return Heavyrain\Scenario\ScenarioConfigInterface');
-                return Command::INVALID;
-            }
-        }
-
         $userAgentBase = \sprintf(
             '%s/%s',
             $this->getApplication()?->getName() ?? 'heavyrain',
@@ -170,8 +141,10 @@ final class RunCommand extends Command implements SignalableCommandInterface
         $startMicrosec = \microtime(true);
         $io->writeln(\sprintf('Start execution at %s', \date('Y-m-d H:i:s')));
 
+        $client = ClientFactory::create($baseUri);
+
         // TODO: Select executor
-        (new ExecutorFactory($config, $scenarioFunction->getClosure(), $profiler))
+        (new ExecutorFactory($config, $scenarioFunction->getClosure(), $profiler, $client))
             ->createSync()
             ->execute($this->cancelToken);
 
