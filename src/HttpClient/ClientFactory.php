@@ -18,10 +18,16 @@ use Laminas\Diactoros\StreamFactory;
 use Laminas\Diactoros\UriFactory;
 
 /**
- * Client factory
+ * A factory for creating HTTP clients.
  */
 final class ClientFactory
 {
+    /**
+     * Creates a new HTTP client instance with the specified base URI.
+     *
+     * @param string $baseUri The base URI for the HTTP client.
+     * @return ClientInterface The newly created HTTP client instance.
+     */
     public static function create(string $baseUri): ClientInterface
     {
         $ampHttpClient = (new HttpClientBuilder())

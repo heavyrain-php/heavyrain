@@ -24,7 +24,7 @@ use Psr\Http\Message\ResponseInterface;
  */
 final class AmphpClient implements HttpClientInterface
 {
-    /** @var Closure[] $middlewares */
+    /** @var list<Closure(RequestInterface $request, callable $next): ResponseInterface> $middlewares */
     private array $middlewares = [];
 
     public function __construct(

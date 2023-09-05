@@ -11,7 +11,6 @@ namespace Heavyrain\Executor;
 use Buzz\Client\BuzzClientInterface;
 use Closure;
 use Heavyrain\Contracts\ClientInterface;
-use Heavyrain\Executor\Middlewares\IdentifyRequestMiddleware;
 use Heavyrain\Executor\Middlewares\ProfilingMiddleware;
 use Heavyrain\Executor\Middlewares\WaitSendRequestMiddleware;
 use Heavyrain\Scenario\Client;
@@ -43,9 +42,6 @@ final class BuzzClient
             'verify' => $this->config->sslVerify,
             'timeout' => $this->config->timeout,
         ]);
-        // TODO: implement uniqid every client
-        $clientId = \uniqid();
-        $client->addMiddleware(new IdentifyRequestMiddleware($clientId));
         $client->addMiddleware(new ProfilingMiddleware($this->profiler));
         $client->addMiddleware(new WaitSendRequestMiddleware($this->config->waitAfterSendRequestSec));
 
