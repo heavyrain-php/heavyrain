@@ -16,8 +16,8 @@ interface ReporterInterface
     /**
      * Reports HTTP profiling results
      *
-     * @param HttpProfilerInterface $profiler
+     * @param array $results
      * @return void
      */
-    public function report(HttpProfilerInterface $profiler): void;
+    public function report(array $results): void;
 }

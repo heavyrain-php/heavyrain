@@ -20,9 +20,7 @@ final class Application extends SymfonyApplication
     {
         parent::__construct(self::NAME, self::VERSION);
         $this->addCommands([
-            new Commands\GenerateStubCommand(),
             new Commands\RunCommand(),
-            new Commands\WebCommand(),
         ]);
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @license MIT
  */
+
+declare(strict_types=1);
 
 namespace Heavyrain\HttpClient;
 
@@ -28,6 +28,7 @@ final class AmphpClient implements HttpClientInterface
     private array $middlewares = [];
 
     public function __construct(
+        private readonly HttpProfiler $profiler,
         private readonly HttpClient $client,
         private readonly ResponseFactoryInterface $responseFactory,
     ) {
@@ -40,12 +41,47 @@ final class AmphpClient implements HttpClientInterface
 
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
-        $handler = fn (RequestInterface $request): ResponseInterface =>
-            $this->toPsrResponse($this->client->request($this->fromPsrRequest($request)));
+        // first class callable
+        $handler = $this->handle(...);
 
         $queue = new MiddlewareQueue($this->middlewares, $handler);
 
         return $queue->handle($request);
+    }
+
+    /**
+     * Handle request
+     *
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     */
+    private function handle(RequestInterface $request): ResponseInterface
+    {
+        $ampRequest = $this->fromPsrRequest($request);
+
+        // TODO: Set request parameters
+        if (!$ampRequest->hasHeader('User-Agent')) {
+            $ampRequest->setHeader('User-Agent', 'heavyrain/0.0.1');
+        }
+        $ampRequest->setBodySizeLimit(1024 * 1024);
+        $ampRequest->setInactivityTimeout(10);
+        $ampRequest->setTcpConnectTimeout(10);
+        $ampRequest->setTlsHandshakeTimeout(10);
+        $ampRequest->setTransferTimeout(10);
+
+        try {
+            $response = $this->client->request($ampRequest);
+
+            // Profiles with HTTP events.
+            $this->profiler->profile($ampRequest, $response);
+        } catch (\Throwable $exception) {
+            // Profile exception during request
+            $this->profiler->profileException($ampRequest, $exception);
+
+            throw new RequestException('failed to fetch response', previous: $exception);
+        }
+
+        return $this->toPsrResponse($response);
     }
 
     /**

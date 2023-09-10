@@ -9,27 +9,24 @@ declare(strict_types=1);
 namespace Heavyrain\Executor;
 
 use Closure;
-use Heavyrain\Contracts\ClientInterface;
 use Heavyrain\Contracts\ExecutorInterface;
-use Heavyrain\Scenario\HttpProfiler;
+use Heavyrain\HttpClient\ClientFactory;
+use Heavyrain\HttpClient\HttpProfiler;
 
 final class ExecutorFactory
 {
     public function __construct(
-        private readonly ExecutorConfig $config,
         private readonly Closure $scenarioFunction,
         private readonly HttpProfiler $profiler,
-        private readonly ClientInterface $client,
+        private readonly string $baseUri,
     ) {
     }
 
     public function createSync(): ExecutorInterface
     {
         return new SyncExecutor(
-            $this->config,
             $this->scenarioFunction,
-            $this->profiler,
-            $this->client,
+            new ClientFactory($this->profiler, $this->baseUri),
         );
     }
 }

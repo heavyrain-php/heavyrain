@@ -1,10 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @license MIT
  */
+
+declare(strict_types=1);
 
 namespace Heavyrain\HttpClient;
 
@@ -27,6 +27,10 @@ final class MiddlewareHandler
     ) {
     }
 
+    /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     */
     public function handle(RequestInterface $request): ResponseInterface
     {
         // first class callable
@@ -39,6 +43,10 @@ final class MiddlewareHandler
         return ($this->middleware)($request, $handler);
     }
 
+    /**
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     */
     public function __invoke(RequestInterface $request): ResponseInterface
     {
         return $this->handle($request);

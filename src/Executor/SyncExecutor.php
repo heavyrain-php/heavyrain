@@ -10,9 +10,9 @@ namespace Heavyrain\Executor;
 
 use Closure;
 use Heavyrain\Contracts\CancellationTokenInterface;
-use Heavyrain\Contracts\ClientInterface;
 use Heavyrain\Contracts\ExecutorInterface;
-use Heavyrain\Scenario\HttpProfiler;
+use Heavyrain\HttpClient\ClientFactory;
+use Heavyrain\HttpClient\RequestException;
 use Throwable;
 
 /**
@@ -21,14 +21,12 @@ use Throwable;
 class SyncExecutor implements ExecutorInterface
 {
     public function __construct(
-        private readonly ExecutorConfig $config,
         private readonly Closure $scenarioFunction,
-        private readonly HttpProfiler $profiler,
-        private readonly ClientInterface $cl,
+        private readonly ClientFactory $factory,
     ) {
     }
 
-    public function execute(CancellationTokenInterface $token): void
+    public function execute(CancellationTokenInterface $token): iterable
     {
         while (true) {
             if ($token->isCancelled()) {
@@ -36,16 +34,14 @@ class SyncExecutor implements ExecutorInterface
             }
 
             try {
-                ($this->scenarioFunction)($this->cl);
+                ($this->scenarioFunction)($this->factory->create());
+            } catch (RequestException $e) {
+                // do nothing because Heavyrain\HttpClient\RequestException was handled in AmphpClient
             } catch (Throwable $e) {
-                $this->profiler->profileException($e);
+                $this->factory->profiler->profileUncaughtException($e);
             }
 
-            /** @var int<0, max> */
-            $usec = \intval(\round(\abs($this->config->waitAfterScenarioSec) * 1_000_000));
-            \usleep($usec);
-
-            return;
+            yield null;
         }
     }
 }

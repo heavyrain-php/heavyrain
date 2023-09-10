@@ -8,12 +8,12 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario;
 
+use Heavyrain\Contracts\HttpClientInterface;
 use Heavyrain\Contracts\RequestBuilderInterface;
 use Heavyrain\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -25,7 +25,7 @@ final class ClientTest extends TestCase
     public function testWait(): void
     {
         $cl = new Client(
-            $this->createMock(ClientInterface::class),
+            $this->createMock(HttpClientInterface::class),
             $this->createMock(RequestBuilderInterface::class),
         );
 
@@ -129,13 +129,13 @@ final class ClientTest extends TestCase
 
     private function createClient(string $method, string $path, string $bodyMethod, string|array $bodyWith): Client
     {
-        /** @var \PHPUnit\Framework\MockObject\MockObject&ClientInterface */
-        $psrCl = $this->createMock(ClientInterface::class);
+        /** @var \PHPUnit\Framework\MockObject\MockObject&HttpClientInterface */
+        $cl = $this->createMock(HttpClientInterface::class);
         /** @var \PHPUnit\Framework\MockObject\MockObject&RequestBuilderInterface */
         $builder = $this->createMock(RequestBuilderInterface::class);
         $request = $this->createMock(RequestInterface::class);
 
-        $psrCl->expects($this->once())
+        $cl->expects($this->once())
             ->method('sendRequest')
             ->with($request)
             ->willReturn($this->createMock(ResponseInterface::class));
@@ -157,6 +157,6 @@ final class ClientTest extends TestCase
             ->with()
             ->willReturn($request);
 
-        return new Client($psrCl, $builder);
+        return new Client($cl, $builder);
     }
 }

@@ -11,12 +11,11 @@ namespace Heavyrain\Console\Commands;
 use Closure;
 use Heavyrain\Executor\ExecutorConfig;
 use Heavyrain\Executor\ExecutorFactory;
+use Heavyrain\Executor\SyncExecutor;
 use Heavyrain\HttpClient\ClientFactory;
+use Heavyrain\HttpClient\HttpProfiler;
 use Heavyrain\Reporters\TableReporter;
 use Heavyrain\Scenario\CancellationToken;
-use Heavyrain\Scenario\DefaultScenarioConfig;
-use Heavyrain\Scenario\HttpProfiler;
-use Heavyrain\Scenario\ScenarioConfigInterface;
 use ReflectionFunction;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -28,8 +27,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
-    name: 'run',
-    description: 'Run scenario',
+    name: 'run:single',
+    description: 'Run scenario once',
 )]
 final class RunCommand extends Command implements SignalableCommandInterface
 {
@@ -47,33 +46,11 @@ final class RunCommand extends Command implements SignalableCommandInterface
                 InputArgument::REQUIRED,
                 'Request base URI',
             )->addOption(
-                'config',
-                'c',
+                'output',
+                'o',
                 InputOption::VALUE_REQUIRED,
-                'PHP filename for scenario config',
-            )->addOption(
-                'timeout',
-                't',
-                InputOption::VALUE_REQUIRED,
-                'Request timeout seconds',
-                0.0,
-            )->addOption(
-                'verify-cert',
-                null,
-                InputOption::VALUE_NONE,
-                'Enables SSL/TLS certificate verification',
-            )->addOption(
-                'wait-after-scenario',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Wait seconds after scenario',
-                1.0,
-            )->addOption(
-                'wait-after-request',
-                null,
-                InputOption::VALUE_REQUIRED,
-                'Wait seconds after request',
-                0.3,
+                'Output format',
+                'table',
             );
     }
 
@@ -88,10 +65,6 @@ final class RunCommand extends Command implements SignalableCommandInterface
 
         /** @var string $baseUri */
         $baseUri = $input->getArgument('base-uri');
-        $timeout = \floatval($input->getOption('timeout'));
-        $verifyCert = \boolval($input->getOption('verify-cert'));
-        $waitAfterScenarioSec = \floatval($input->getOption('wait-after-scenario'));
-        $waitAfterSendRequestSec = \floatval($input->getOption('wait-after-request'));
 
         /** @var string */
         $scenarioFileName = $input->getArgument('scenario-php-file');
@@ -113,49 +86,33 @@ final class RunCommand extends Command implements SignalableCommandInterface
         if (\method_exists($scenarioFunction, 'isStatic') && !$scenarioFunction->isStatic()) {
             $io->warning('Scenario Closure should be static: `return static function(...`');
         }
-
-        $userAgentBase = \sprintf(
-            '%s/%s',
-            $this->getApplication()?->getName() ?? 'heavyrain',
-            $this->getApplication()?->getVersion() ?? 'dev',
-        );
-        $config = new ExecutorConfig(
-            $baseUri,
-            $userAgentBase,
-            $waitAfterScenarioSec,
-            $waitAfterSendRequestSec,
-            $verifyCert,
-            $timeout,
-        );
-        $profiler = new HttpProfiler();
         $this->cancelToken = new CancellationToken();
 
         $io->definitionList(
             ['Base URI' => $baseUri],
             ['Scenario' => $scenarioFilePath],
-            ['SSL/TLS verify' => $verifyCert ? 'yes' : 'no (default)'],
         );
 
         $startMicrosec = \microtime(true);
         $io->writeln(\sprintf('Start execution at %s', \date('Y-m-d H:i:s')));
+        $profiler = new HttpProfiler();
 
-        $client = ClientFactory::create($baseUri);
-
-        // TODO: Select executor
-        (new ExecutorFactory($config, $scenarioFunction->getClosure(), $profiler, $client))
-            ->createSync()
+        (new SyncExecutor($scenarioFunction->getClosure(), new ClientFactory($profiler, $baseUri)))
             ->execute($this->cancelToken);
 
         $io->writeln(
             \sprintf(
-                'End execution   at %s (%f seconds)',
+                'End execution   at %s (%.3f seconds)',
                 \date('Y-m-d H:i:s'),
                 \microtime(true) - $startMicrosec,
             ),
         );
 
-        // TODO: Select reporter
-        (new TableReporter($io))->report($profiler);
+        $reporter = match ($input->getOption('output')) {
+            'table' => new TableReporter($io),
+            default => new TableReporter($io),
+        };
+        $reporter->report($profiler->getResults());
 
         return Command::SUCCESS;
     }

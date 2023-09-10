@@ -18,7 +18,7 @@ interface ExecutorInterface
      * It must not throw Exception
      *
      * @param CancellationTokenInterface $token
-     * @return void
+     * @return iterable
      */
-    public function execute(CancellationTokenInterface $token): void;
+    public function execute(CancellationTokenInterface $token): iterable;
 }

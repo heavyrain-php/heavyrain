@@ -1,10 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @license MIT
  */
+
+declare(strict_types=1);
 
 namespace Heavyrain\HttpClient;
 
@@ -20,25 +20,38 @@ use Laminas\Diactoros\UriFactory;
 /**
  * A factory for creating HTTP clients.
  */
-final class ClientFactory
+class ClientFactory
 {
+    /**
+     * @param HttpProfiler $profiler The HTTP profiler.
+     * @param string $baseUri The base URI for the HTTP client.
+     * @param int $followRedirects Follows redirects count
+     */
+    public function __construct(
+        public readonly HttpProfiler $profiler,
+        private readonly string $baseUri,
+        private readonly int $followRedirects = 0,
+    ) {
+    }
+
     /**
      * Creates a new HTTP client instance with the specified base URI.
      *
-     * @param string $baseUri The base URI for the HTTP client.
      * @return ClientInterface The newly created HTTP client instance.
      */
-    public static function create(string $baseUri): ClientInterface
+    public function create(): ClientInterface
     {
         $ampHttpClient = (new HttpClientBuilder())
             ->allowDeprecatedUriUserInfo()
-            ->followRedirects(0)
+            ->followRedirects($this->followRedirects)
             ->skipAutomaticCompression()
             ->skipDefaultAcceptHeader()
             ->skipDefaultUserAgent()
+            ->listen(new AmphpEventListener())
             ->build();
 
         $httpClient = new AmphpClient(
+            $this->profiler,
             $ampHttpClient,
             new ResponseFactory(),
         );
@@ -47,7 +60,7 @@ final class ClientFactory
             new UriFactory(),
             new StreamFactory(),
             new RequestFactory(),
-            $baseUri,
+            $this->baseUri,
         );
 
         return new Client($httpClient, $requestBuilder);

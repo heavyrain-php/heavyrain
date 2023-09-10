@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Heavyrain\Tests\Integration;
 
 use Heavyrain\Contracts\ClientInterface;
+use Heavyrain\Contracts\HttpClientInterface;
 use Heavyrain\Scenario\AssertableResponse;
 use Heavyrain\Scenario\Client;
 use Heavyrain\Scenario\RequestBuilder;
@@ -18,7 +19,6 @@ use Laminas\Diactoros\StreamFactory;
 use Laminas\Diactoros\UriFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
-use Psr\Http\Client\ClientInterface as PsrClientInterface;
 use Psr\Http\Message\ResponseInterface;
 
 #[CoversClass(AssertableResponse::class)]
@@ -29,8 +29,8 @@ final class SimpleScenarioTest extends TestCase
     #[Test]
     public function run_simple_scenario(): void
     {
-        /** @var \PHPUnit\Framework\MockObject\MockObject&PsrClientInterface */
-        $psrClient = $this->createMock(PsrClientInterface::class);
+        /** @var \PHPUnit\Framework\MockObject\MockObject&HttpClientInterface */
+        $httpClient = $this->createMock(HttpClientInterface::class);
         $builder = new RequestBuilder(
             new UriFactory(),
             new StreamFactory(),
@@ -39,12 +39,12 @@ final class SimpleScenarioTest extends TestCase
         );
         $response = $this->createMock(ResponseInterface::class);
 
-        $psrClient->expects($this->once())
+        $httpClient->expects($this->once())
             ->method('sendRequest')
             ->withAnyParameters()
             ->willReturn($response);
 
-        $cl = new Client($psrClient, $builder);
+        $cl = new Client($httpClient, $builder);
 
         $func = static function (ClientInterface $cl): void {
             $cl->get('/');

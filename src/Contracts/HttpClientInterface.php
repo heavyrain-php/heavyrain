@@ -1,10 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @license MIT
  */
+
+declare(strict_types=1);
 
 namespace Heavyrain\Contracts;
 
