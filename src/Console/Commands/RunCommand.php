@@ -8,10 +8,8 @@ declare(strict_types=1);
 
 namespace Heavyrain\Console\Commands;
 
+use Amp\DeferredCancellation;
 use Closure;
-use Heavyrain\Executor\ExecutorConfig;
-use Heavyrain\Executor\ExecutorFactory;
-use Heavyrain\Executor\SyncExecutor;
 use Heavyrain\HttpClient\ClientFactory;
 use Heavyrain\HttpClient\HttpProfiler;
 use Heavyrain\Reporters\TableReporter;
@@ -25,13 +23,20 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Heavyrain\Executor\AmphpExecutor;
+use Heavyrain\Executor\OnceExecutor;
 
 #[AsCommand(
-    name: 'run:single',
-    description: 'Run scenario once',
+    name: 'run',
+    description: 'Run target scenario',
 )]
 final class RunCommand extends Command implements SignalableCommandInterface
 {
+    /**
+     * OS Signal cancellation token
+     *
+     * @var CancellationToken|null
+     */
     private ?CancellationToken $cancelToken = null;
 
     protected function configure(): void
@@ -46,11 +51,22 @@ final class RunCommand extends Command implements SignalableCommandInterface
                 InputArgument::REQUIRED,
                 'Request base URI',
             )->addOption(
+                'runner',
+                'r',
+                InputOption::VALUE_REQUIRED,
+                'Runner type(available: once, async, aggregator, worker)',
+                'once',
+            )->addOption(
                 'output',
                 'o',
                 InputOption::VALUE_REQUIRED,
                 'Output format',
                 'table',
+            )->addOption(
+                'users',
+                'u',
+                InputOption::VALUE_REQUIRED,
+                'Concurrent users',
             );
     }
 
@@ -86,19 +102,43 @@ final class RunCommand extends Command implements SignalableCommandInterface
         if (\method_exists($scenarioFunction, 'isStatic') && !$scenarioFunction->isStatic()) {
             $io->warning('Scenario Closure should be static: `return static function(...`');
         }
-        $this->cancelToken = new CancellationToken();
+        $this->cancelToken = new CancellationToken(new DeferredCancellation);
+        $users = $input->getOption('users');
+        \assert(\is_int($users));
 
         $io->definitionList(
             ['Base URI' => $baseUri],
             ['Scenario' => $scenarioFilePath],
+            ['Users' => $users],
         );
+
+        $profiler = new HttpProfiler();
+
+        $reporter = match ($input->getOption('output')) {
+            'table' => new TableReporter($io),
+            default => null,
+        };
+        if (\is_null($reporter)) {
+            $io->error('Unknown output format provided=' . (string)$input->getOption('output'));
+            return Command::INVALID;
+        }
+
+        $executor = match ($input->getOption('runner')) {
+            'once' => new OnceExecutor($scenarioFunction->getClosure(), new ClientFactory($profiler, $baseUri), $profiler),
+            'async' => new AmphpExecutor($scenarioFunction->getClosure(), new ClientFactory($profiler, $baseUri), $profiler, $users),
+            'aggregator' => throw new \RuntimeException('Runner:aggregator not implemented yet'),
+            'worker' => throw new \RuntimeException('Runner:worker not implemented yet'),
+            default => null,
+        };
+        if (\is_null($executor)) {
+            $io->error('Unknown runner type provided=' . (string)$input->getOption('runner'));
+            return Command::INVALID;
+        }
 
         $startMicrosec = \microtime(true);
         $io->writeln(\sprintf('Start execution at %s', \date('Y-m-d H:i:s')));
-        $profiler = new HttpProfiler();
 
-        (new SyncExecutor($scenarioFunction->getClosure(), new ClientFactory($profiler, $baseUri)))
-            ->execute($this->cancelToken);
+        $executor->execute($this->cancelToken);
 
         $io->writeln(
             \sprintf(
@@ -108,10 +148,6 @@ final class RunCommand extends Command implements SignalableCommandInterface
             ),
         );
 
-        $reporter = match ($input->getOption('output')) {
-            'table' => new TableReporter($io),
-            default => new TableReporter($io),
-        };
         $reporter->report($profiler->getResults());
 
         return Command::SUCCESS;

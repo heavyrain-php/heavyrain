@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Heavyrain\HttpClient;
 
+use Amp\Cancellation;
 use Amp\Http\Client\HttpClient;
 use Amp\Http\Client\Request;
 use Amp\Http\Client\Response;
@@ -31,6 +32,7 @@ final class AmphpClient implements HttpClientInterface
         private readonly HttpProfiler $profiler,
         private readonly HttpClient $client,
         private readonly ResponseFactoryInterface $responseFactory,
+        private readonly Cancellation $cancellation,
     ) {
     }
 
@@ -70,10 +72,10 @@ final class AmphpClient implements HttpClientInterface
         $ampRequest->setTransferTimeout(10);
 
         try {
-            $response = $this->client->request($ampRequest);
+            $ampResponse = $this->client->request($ampRequest, $this->cancellation);
 
             // Profiles with HTTP events.
-            $this->profiler->profile($ampRequest, $response);
+            $this->profiler->profile($ampRequest, $ampResponse);
         } catch (\Throwable $exception) {
             // Profile exception during request
             $this->profiler->profileException($ampRequest, $exception);
@@ -81,7 +83,7 @@ final class AmphpClient implements HttpClientInterface
             throw new RequestException('failed to fetch response', previous: $exception);
         }
 
-        return $this->toPsrResponse($response);
+        return $this->toPsrResponse($ampResponse);
     }
 
     /**
