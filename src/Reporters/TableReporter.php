@@ -19,11 +19,20 @@ class TableReporter implements ReporterInterface
 
     public function report(array $results): void
     {
+        $rows = [];
+        /** @var \Heavyrain\HttpClient\HttpResult $result */
+        foreach ($results as $result) {
+            $rows[] = [
+                'request' => \json_encode($result['request']),
+                'response' => \json_encode($result['response']),
+                'requestException' => \json_encode($result['requestException']),
+                'uncaughtException' => \json_encode($result['uncaughtException']),
+            ];
+        }
         $table = $this->io->createTable();
         $table
-            ->addRows($results)
+            ->addRows($rows)
             ->render();
-        return;
 
         // TODO: remove
         // $rows = [];

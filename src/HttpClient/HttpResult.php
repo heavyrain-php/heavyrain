@@ -117,12 +117,12 @@ final class HttpResult implements ArrayAccess, JsonSerializable, Stringable
             'reasonPhrase' => $response->getReason(),
             'size' => -1,
             'timing' => [
-                'start' => $response->getRequest()->getAttribute(self::START_KEY),
-                'connect' => $response->getRequest()->getAttribute(self::CONNECT_KEY),
-                'sendStart' => $response->getRequest()->getAttribute(self::SEND_START_KEY),
-                'sendEnd' => $response->getRequest()->getAttribute(self::SEND_END_KEY),
-                'receiveStart' => $response->getRequest()->getAttribute(self::RECEIVE_START_KEY),
-                'receiveEnd' => $response->getRequest()->getAttribute(self::RECEIVE_END_KEY),
+                'start' => $response->getRequest()->hasAttribute(self::START_KEY) ? $response->getRequest()->getAttribute(self::START_KEY) : null,
+                'connect' => $response->getRequest()->hasAttribute(self::CONNECT_KEY) ? $response->getRequest()->getAttribute(self::CONNECT_KEY) : null,
+                'sendStart' => $response->getRequest()->hasAttribute(self::SEND_START_KEY) ? $response->getRequest()->getAttribute(self::SEND_START_KEY) : null,
+                'sendEnd' => $response->getRequest()->hasAttribute(self::SEND_END_KEY) ? $response->getRequest()->getAttribute(self::SEND_END_KEY) : null,
+                'receiveStart' => $response->getRequest()->hasAttribute(self::RECEIVE_START_KEY) ? $response->getRequest()->getAttribute(self::RECEIVE_START_KEY) : null,
+                'receiveEnd' => $response->getRequest()->hasAttribute(self::RECEIVE_END_KEY) ? $response->getRequest()->getAttribute(self::RECEIVE_END_KEY) : null,
             ],
             'headers' => $response->getHeaders(),
         ];

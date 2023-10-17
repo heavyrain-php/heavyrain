@@ -138,7 +138,9 @@ final class RunCommand extends Command implements SignalableCommandInterface
         $startMicrosec = \microtime(true);
         $io->writeln(\sprintf('Start execution at %s', \date('Y-m-d H:i:s')));
 
-        $executor->execute($this->cancelToken);
+        foreach ($executor->execute($this->cancelToken) as $_) {
+            // Do nothing
+        }
 
         $io->writeln(
             \sprintf(
