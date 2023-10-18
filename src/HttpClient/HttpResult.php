@@ -57,11 +57,13 @@ final class HttpResult implements HttpResultInterface
         return $this->result[$offset];
     }
 
-    public function offsetSet(mixed $offset, mixed $value): void {
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
         throw new \LogicException('HttpResult is immutable');
     }
 
-    public function offsetUnset(mixed $offset): void {
+    public function offsetUnset(mixed $offset): void
+    {
         throw new \LogicException('HttpResult is immutable');
     }
 

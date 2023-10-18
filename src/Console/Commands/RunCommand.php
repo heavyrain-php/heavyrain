@@ -102,7 +102,7 @@ final class RunCommand extends Command implements SignalableCommandInterface
         if (\method_exists($scenarioFunction, 'isStatic') && !$scenarioFunction->isStatic()) {
             $io->warning('Scenario Closure should be static: `return static function(...`');
         }
-        $this->cancelToken = new CancellationToken(new DeferredCancellation);
+        $this->cancelToken = new CancellationToken(new DeferredCancellation());
         $users = $input->getOption('users');
         \assert(\is_int($users));
 
