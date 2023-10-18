@@ -10,17 +10,16 @@ namespace Heavyrain\HttpClient;
 
 use Amp\Http\Client\Request;
 use Amp\Http\Client\Response;
-use ArrayAccess;
-use JsonSerializable;
-use Stringable;
+use ArrayIterator;
+use Heavyrain\Contracts\HttpResultInterface;
 use Throwable;
+use Traversable;
 
 /**
  * HTTP profiling result
  * for reduce memory and reference leaks, all data is stored in array
- * @template-implements ArrayAccess<string, array>
  */
-final class HttpResult implements ArrayAccess, JsonSerializable, Stringable
+final class HttpResult implements HttpResultInterface
 {
     public const START_KEY = 'start';
     public const CONNECT_KEY = 'connect';
@@ -47,25 +46,28 @@ final class HttpResult implements ArrayAccess, JsonSerializable, Stringable
 
     public function offsetExists(mixed $offset): bool
     {
-        return \in_array($offset, ['request', 'response', 'request_exception', 'uncaught_exception'], true);
+        return \array_key_exists($offset, $this->result);
     }
 
     public function offsetGet(mixed $offset): mixed
     {
         if (!\array_key_exists($offset, $this->result)) {
-            throw new \RuntimeException('invalid offset. supported: request, response, request_exception, uncaught_exception');
+            throw new \RuntimeException('invalid offset. supported: request, response, requestException, uncaughtException');
         }
         return $this->result[$offset];
     }
 
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        throw new \LogicException('cannot set result after created');
+    public function offsetSet(mixed $offset, mixed $value): void {
+        throw new \LogicException('HttpResult is immutable');
     }
 
-    public function offsetUnset(mixed $offset): void
+    public function offsetUnset(mixed $offset): void {
+        throw new \LogicException('HttpResult is immutable');
+    }
+
+    public function getIterator(): Traversable
     {
-        throw new \LogicException('cannot unset result after created');
+        return new ArrayIterator($this->result);
     }
 
     public function jsonSerialize(): mixed
@@ -173,7 +175,7 @@ final class HttpResult implements ArrayAccess, JsonSerializable, Stringable
             'class' => \get_class($exception),
             'message' => $exception->getMessage(),
             'code' => $exception->getCode(),
-            'previousMessage' => $exception->getPrevious() ? $exception->getPrevious()->getMessage() : null,
+            'previousMessage' => $exception->getPrevious()?->getMessage(),
         ];
     }
 }

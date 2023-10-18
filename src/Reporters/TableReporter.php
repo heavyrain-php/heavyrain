@@ -20,7 +20,6 @@ class TableReporter implements ReporterInterface
     public function report(array $results): void
     {
         $rows = [];
-        /** @var \Heavyrain\HttpClient\HttpResult $result */
         foreach ($results as $result) {
             $rows[] = [
                 'request' => \json_encode($result['request']),

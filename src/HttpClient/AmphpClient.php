@@ -74,16 +74,18 @@ final class AmphpClient implements HttpClientInterface
         try {
             $ampResponse = $this->client->request($ampRequest, $this->cancellation);
 
+            $psrResponse = $this->toPsrResponse($ampResponse);
+
             // Profiles with HTTP events.
             $this->profiler->profile($ampRequest, $ampResponse);
+
+            return $psrResponse;
         } catch (\Throwable $exception) {
             // Profile exception during request
             $this->profiler->profileException($ampRequest, $exception);
 
             throw new RequestException('failed to fetch response', previous: $exception);
         }
-
-        return $this->toPsrResponse($ampResponse);
     }
 
     /**

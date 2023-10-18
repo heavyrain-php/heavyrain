@@ -139,7 +139,7 @@ final class RunCommand extends Command implements SignalableCommandInterface
         $io->writeln(\sprintf('Start execution at %s', \date('Y-m-d H:i:s')));
 
         foreach ($executor->execute($this->cancelToken) as $_) {
-            // Do nothing
+            // TODO: add progress
         }
 
         $io->writeln(
