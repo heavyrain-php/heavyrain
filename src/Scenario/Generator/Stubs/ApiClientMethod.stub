@@ -1,0 +1,4 @@
+    public function {{ methodName }}({{ parameters }}): AssertableResponseInterface
+    {
+        return $this->client->requestWithOptions({{ options }});
+    }
