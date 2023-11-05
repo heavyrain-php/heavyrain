@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario\Generator;
 
+use cebe\openapi\spec\OpenApi;
 use RuntimeException;
 
 /**
@@ -17,31 +18,21 @@ final class OpenApiClientGenerator
 {
     /**
      * Generates an ApiClient class from an OpenAPI schema.
-     * @param array $openApiSchema Array parsed Schema
+     * @param OpenApi $openApiSchema
      * @return string ApiClient class file contents
      */
-    public function generate(array $openApiSchema): string
+    public function generate(OpenApi $openApiSchema): string
     {
-        $this->ensureSupportedVersion(\array_key_exists('version', $openApiSchema) ? $openApiSchema['version'] : null);
+        $this->ensureSupportedVersion($openApiSchema->openapi);
         $methods = $this->generateMethods($openApiSchema);
 
-        // TODO: map methods using stubs
+        $clientStub = \file_get_contents(__DIR__ . '/Stubs/ApiClient.stub');
 
-        // TODO: inject methods to stub file contents
-
-        // TODO: returns stub contents
-    }
-
-    /**
-     * Generates methods
-     * @param array $openApiSchema
-     * @return ApiClientMethod[]
-     */
-    private function generateMethods(array $openApiSchema): array
-    {
-        // TODO: map paths to ApiClientMethod[]
-
-        return [];
+        return $this->generateFromStub(
+            $openApiSchema,
+            $methods,
+            $clientStub,
+        );
     }
 
     /**
@@ -64,8 +55,42 @@ final class OpenApiClientGenerator
             throw new NotImplementedException('OpenAPI 3.1.0 is not supported yet');
         }
 
-        if ($version !== '3.0.0') {
-            throw new RuntimeException('Unsupported OpenAPI version: ' . $version); // @codeCoverageIgnore
+        if ($version !== '3.0.0' && $version !== '3.0.1' && $version !== '3.0.2' && $version !== '3.0.3') {
+            throw new RuntimeException('Unsupported OpenAPI version: ' . $version);
         }
+    }
+
+    /**
+     * Generates methods
+     * @param OpenApi $openApiSchema
+     * @return ApiClientMethod[]
+     */
+    private function generateMethods(OpenApi $openApiSchema): array
+    {
+        $methods = [];
+        foreach ($openApiSchema->paths as $path => $pathItem) {
+            \assert(\is_string($path));
+            foreach ($pathItem->getOperations() as $method => $operation) {
+                \assert(\is_string($method));
+                $methods[] = new ApiClientMethod(
+                    $path,
+                    $method,
+                    $operation,
+                );
+            }
+        }
+
+        return $methods;
+    }
+
+    /**
+     * Generates ApiClient class file contents from stubs.
+     * @param OpenApi $openApiSchema
+     * @param array $methods
+     * @param string $clientStub
+     * @return string
+     */
+    private function generateFromStub(OpenApi $openApiSchema, array $methods, string $clientStub): string
+    {
     }
 }

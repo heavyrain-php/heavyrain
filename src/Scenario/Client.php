@@ -83,9 +83,6 @@ final class Client implements ClientInterface
         if (!\is_null($query)) {
             $builder->query($query);
         }
-        if (!\is_null($body) && !\is_null($json)) {
-            throw new RequestBuilderException('You can specify either body or json');
-        }
         if (!\is_null($body)) {
             $builder->body($body);
         }

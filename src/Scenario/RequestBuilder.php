@@ -165,7 +165,7 @@ class RequestBuilder implements RequestBuilderInterface
 
     public function method(string $method): self
     {
-        $this->method = $method;
+        $this->method = \strtoupper($method);
         return $this;
     }
 
@@ -196,6 +196,7 @@ class RequestBuilder implements RequestBuilderInterface
 
     public function query(array $query): self
     {
+        // TODO: support multi-dimentional array query
         foreach ($query as $name => $value) {
             $this->query[$name] = \strval($value);
         }

@@ -20,6 +20,7 @@ final class Application extends SymfonyApplication
     {
         parent::__construct(self::NAME, self::VERSION);
         $this->addCommands([
+            new Commands\GenerateClientCommand(),
             new Commands\RunCommand(),
         ]);
     }
