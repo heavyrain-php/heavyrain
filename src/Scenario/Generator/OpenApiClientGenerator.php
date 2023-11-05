@@ -92,6 +92,5 @@ final class OpenApiClientGenerator
      */
     private function generateFromStub(OpenApi $openApiSchema, array $methods, string $clientStub): string
     {
-
     }
 }
