@@ -170,6 +170,102 @@ EOL
 
 EOL
             ],
+            'post query /todo/add' => [
+                'path' => '/todo/add',
+                'method' => 'post',
+                'operation' => new Operation([
+                    'operationId' => 'AddTodo',
+                    'requestBody' => [
+                        'content' => [
+                            'application/x-www-form-urlencoded' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'title' => [
+                                            'type' => 'string',
+                                        ],
+                                        'description' => [
+                                            'type' => 'string',
+                                        ],
+                                    ],
+                                    'required' => [
+                                        'title',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ]),
+                'assertsOk' => true,
+                'expected' => <<<'EOL'
+    public function addTodo(string $body): AssertableResponseInterface
+    {
+        return $this->client->requestWithOptions(method: 'post', path: '/todo/add', pathArgs: null, query: null, body: $body, json: null, assertsOk: true);
+    }
+
+EOL
+            ],
+            'post query /todo/update' => [
+                'path' => '/todo/update',
+                'method' => 'post',
+                'operation' => new Operation([
+                    'operationId' => 'UpdateTodo',
+                    'requestBody' => [
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'title' => [
+                                            'type' => 'string',
+                                        ],
+                                        'description' => [
+                                            'type' => 'string',
+                                        ],
+                                    ],
+                                    'required' => [
+                                        'title',
+                                        'description',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ]),
+                'assertsOk' => true,
+                'expected' => <<<'EOL'
+    public function updateTodo(array $body): AssertableResponseInterface
+    {
+        return $this->client->requestWithOptions(method: 'post', path: '/todo/update', pathArgs: null, query: null, body: null, json: $body, assertsOk: true);
+    }
+
+EOL
+            ],
+            'has Description get /' => [
+                'path' => '/',
+                'method' => 'get',
+                'operation' => new Operation([
+                    'summary' => 'Get root',
+                    'description' => <<<'EOL'
+Get parameters from root
+2nd line
+EOL
+,
+                ]),
+                'assertsOk' => true,
+                'expected' => <<<'EOL'
+    /**
+     * Get root
+     *
+     * Get parameters from root 2nd line
+     */
+    public function get(): AssertableResponseInterface
+    {
+        return $this->client->requestWithOptions(method: 'get', path: '/', pathArgs: null, query: null, body: null, json: null, assertsOk: true);
+    }
+
+EOL
+            ],
         ];
     }
 }

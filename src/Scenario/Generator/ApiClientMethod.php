@@ -8,10 +8,12 @@ declare(strict_types=1);
 
 namespace Heavyrain\Scenario\Generator;
 
+use cebe\openapi\spec\MediaType;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Parameter;
 use cebe\openapi\spec\Schema;
 use Stringable;
+use cebe\openapi\spec\RequestBody;
 
 /**
  * Api client method definition
@@ -19,7 +21,7 @@ use Stringable;
 final class ApiClientMethod implements Stringable
 {
     private const STUB = <<<'EOL'
-    public function {{ methodName }}({{ parameters }}): AssertableResponseInterface
+{{ description }}public function {{ methodName }}({{ parameters }}): AssertableResponseInterface
     {
         return $this->client->requestWithOptions({{ options }});
     }
@@ -36,7 +38,15 @@ EOL;
      * @psalm-var array<string, array{type: string, name: string, required: bool}> $query
      */
     private readonly array $query;
-    private readonly ?string $body;
+    /**
+     * @var array $query
+     * @psalm-var array{type: string, name: string, required: bool} $query
+     */
+    private readonly ?array $body;
+    /**
+     * @var array $query
+     * @psalm-var array{type: string, name: string, required: bool} $query
+     */
     private readonly ?array $json;
 
     /**
@@ -44,6 +54,8 @@ EOL;
      * @psalm-var array<string, array{type: string, name: string, required: bool}> $pathArgs
      */
     private readonly array $parameters;
+
+    private readonly string $descritpion;
 
     public function __construct(
         public readonly string $path,
@@ -54,8 +66,8 @@ EOL;
         $pathArgs = [];
         $parameters = [];
         $query = [];
-        $this->body = null;
-        $this->json = null;
+        $body = null;
+        $json = null;
 
         // Add from parameters
         foreach ($this->operation->parameters as $parameter) {
@@ -93,18 +105,63 @@ EOL;
         }
         $this->pathArgs = $pathArgs;
         $this->query = $query;
-        $this->parameters = $parameters;
 
         // Add from requestBody
+        if ($this->operation->requestBody) {
+            \assert($this->operation->requestBody instanceof RequestBody);
+            if ($this->operation->requestBody->content) {
+                foreach ($this->operation->requestBody->content as $contentType => $mediaType) {
+                    \assert(\is_null($mediaType->schema) || $mediaType->schema instanceof Schema);
+                    if ($contentType === 'application/json') {
+                        $type = [
+                            'type' => 'array', // TODO: support nested array
+                            'name' => 'body',
+                            'required' => true,
+                        ];
+                        $json = $type;
+                        $parameters['body'] = $type;
+                    } else {
+                        $type = [
+                            'type' => 'string', // TODO: support array
+                            'name' => 'body',
+                            'required' => false,
+                        ];
+                        $body = $type;
+                        $parameters['body'] = $type;
+                    }
+                }
+            }
+        }
+        $this->json = $json;
+        $this->body = $body;
+        $this->parameters = $parameters;
+
+        // Add description
+        {
+            $description = '';
+            if ($this->operation->summary) {
+                $description .= \sprintf("     * %s\n", $this->operation->summary);
+            }
+            if ($this->operation->description) {
+                $description .= "     *\n";
+                $description .= \sprintf("     * %s\n", \str_replace(["\r", "\n"], ' ', $this->operation->description));
+            }
+            if ($description !== '') {
+                $description = \sprintf("    /**\n%s     */\n", $description);
+            }
+            $this->descritpion = \sprintf('%s    ', $description);
+        }
     }
 
     public function __toString(): string
     {
         return \str_replace([
+            '{{ description }}',
             '{{ methodName }}',
             '{{ parameters }}',
             '{{ options }}',
         ], [
+            $this->descritpion,
             $this->getMethodName(),
             $this->getParameters(),
             $this->getOptions(),
@@ -207,12 +264,18 @@ EOL;
 
     private function getBody(): string
     {
-        return 'null';
+        if (\is_null($this->body)) {
+            return 'null';
+        }
+        return \sprintf('$%s', $this->body['name']);
     }
 
     private function getJson(): string
     {
-        return 'null';
+        if (\is_null($this->json)) {
+            return 'null';
+        }
+        return \sprintf('$%s', $this->json['name']);
     }
 
     private function getAssertsOk(): string

@@ -19,7 +19,7 @@ final class OpenApiClientGeneratorTest extends TestCase
     #[Test]
     public function testGenerate(): void
     {
-        $openapi = Reader::readFromYamlFile(__DIR__ . '/../../../Stubs/petstore3.0.0.0.yaml');
+        $openapi = Reader::readFromYamlFile(__DIR__ . '/../../../Stubs/petstore3.0.0.yaml');
 
         $actual = (new OpenApiClientGenerator())->generate($openapi);
 
